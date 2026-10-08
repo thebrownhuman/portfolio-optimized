@@ -100,6 +100,7 @@ export default Loading;
 export const setProgress = (setLoading: (value: number) => void) => {
   let percent: number = 0;
   let disposed = false;
+  let rafId: number | undefined;
 
   let interval = setInterval(() => {
     if (disposed) { clearInterval(interval); return; }
@@ -128,22 +129,30 @@ export const setProgress = (setLoading: (value: number) => void) => {
   function dispose() {
     disposed = true;
     clearInterval(interval);
+    if (rafId !== undefined) cancelAnimationFrame(rafId);
   }
 
+  // Count up to 100 at the old pace (a 2ms interval runs at ~4ms once the
+  // browser clamps it), but set React state at most once per frame
   function loaded() {
     return new Promise<number>((resolve) => {
       if (disposed) return;
       clearInterval(interval);
-      interval = setInterval(() => {
-        if (disposed) { clearInterval(interval); return; }
+      let last = performance.now();
+      const step = (now: number) => {
+        if (disposed) return;
+        // Capped like the old interval, which could not catch up after a blocked frame
+        const advance = Math.min(4, Math.max(1, Math.round((now - last) / 4)));
+        last = now;
+        percent = Math.min(100, percent + advance);
+        setLoading(percent);
         if (percent < 100) {
-          percent++;
-          setLoading(percent);
+          rafId = requestAnimationFrame(step);
         } else {
           resolve(percent);
-          clearInterval(interval);
         }
-      }, 2);
+      };
+      rafId = requestAnimationFrame(step);
     });
   }
   return { loaded, percent, clear, dispose };
