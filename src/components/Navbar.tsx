@@ -14,7 +14,7 @@ const Navbar = () => {
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
       smooth: 0.9,
-      speed: 1,
+      speed: 1.7,
       effects: false,
       smoothTouch: false,
       autoResize: true,
