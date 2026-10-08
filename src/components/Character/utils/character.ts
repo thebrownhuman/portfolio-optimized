@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { GLTF, GLTFLoader } from "three-stdlib";
+import { GLTF, GLTFLoader, MeshoptDecoder } from "three-stdlib";
 import { setCharTimeline, setAllTimeline } from "../../utils/GsapScroll";
 
 const setCharacter = (
@@ -8,6 +8,8 @@ const setCharacter = (
   camera: THREE.PerspectiveCamera
 ) => {
   const loader = new GLTFLoader();
+  // character.glb is meshopt-compressed (gltf-transform: quantize + EXT_meshopt_compression)
+  loader.setMeshoptDecoder(MeshoptDecoder());
 
   const loadCharacter = () => {
     return new Promise<GLTF | null>(async (resolve, reject) => {
