@@ -9,7 +9,8 @@ export function setCharTimeline(
   character: THREE.Object3D<THREE.Object3DEventMap> | null,
   camera: THREE.PerspectiveCamera
 ) {
-  charCtx?.revert();
+  // kill, not revert: keep inline styles set outside this context (e.g. the intro rim glow)
+  charCtx?.kill();
   charCtx = gsap.context(() => buildCharTimeline(character, camera));
 }
 
@@ -147,7 +148,7 @@ function buildCharTimeline(
 }
 
 export function setAllTimeline() {
-  allCtx?.revert();
+  allCtx?.kill();
   allCtx = gsap.context(buildAllTimeline);
 }
 
