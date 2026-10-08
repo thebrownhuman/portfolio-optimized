@@ -28,7 +28,7 @@ See `tasks/review.md` for the findings. Branch: `perf/optimize`. One commit per 
 - [x] Clone materials before `compileAsync` (no measurable gain: programs were already cached)
 - [x] Stop blocking on the image preload; `loading="lazy"`
 - [x] Draco wasm-only (model isn't Draco-compressed; decoder kept working for later), throttle the loading-progress updates
-- [ ] Share the HDR between the character and TechStack
+- [x] Share the HDR between the character and TechStack (01ce3e0)
 - [x] Vite manualChunks (rapier / postprocessing split)
 - [x] Character render on demand (Scene.tsx)
 - [x] CLS: loader exit without layout animation
@@ -112,3 +112,11 @@ Notes:
 - CLS: ~165 shifts of .loading-wrap (min-width/min-height exit animation). Now a fixed-size layer revealed with clip-path keyframes sampled from the old curve. Frozen-frame diff of the exit vs before: <= 0.04% with the mouse over the pill; 0.5% / 2.5% (desktop/mobile) at 150 ms without a mouse (glow at its unset position).
 
 Visual verification (dev servers, StrictMode, served code curl-checked), dfaccc2 vs 4f3d7fa, shots in tasks/shots/verify-r2 (not committed): 1920, 1440, 1146 and 390 mobile; loading, intro end, 11 scroll positions; 1440 interactions; resize 1440 -> 1100 -> 1440. Every pair <= 0.83% except the TechStack positions (8-16%, random ball layout per load). Double resize cycle: 7 ScrollTriggers throughout, rim at 220px, identical values per cycle. 10 s idle at top: blink still fires; desk scene (typing + flicker) changes every frame. No console errors.
+
+### Round 3 (worker1, 2026-10-09)
+- [x] 1 Drop DRACOLoader + public/draco (031d8fa, pushed). Model loads, intro/idle anims play, 0 console errors
+- [x] 2 character.glb meshopt + webp q85: 2.34MB -> 845KB (6314f07). GLB done 3.03s -> 2.06s, loader 100% 3.40s -> 2.72s at 20Mbps/40ms (median of 3). Textures PSNR 40-53dB
+- [x] 3 Shared HDR (01ce3e0): 1 fetch instead of 2; load long-task total (4x CPU) 2178 -> 1846ms
+- [x] 4 Self-hosted Geist + fallback metrics (3ad0d62): CLS 0.002 (1440) / 0.000 (390)
+- [x] 5 nginx fonts/wasm cache + gzip glb/hdr (adf3aad): nginx -t OK, no brotli on alpine
+- [ ] Full pixel-diff pass of HEAD vs 6d40283 (only item 2 diffed so far), see tasks/handoff.md
