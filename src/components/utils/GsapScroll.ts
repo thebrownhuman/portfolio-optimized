@@ -153,6 +153,14 @@ function buildCharTimeline(
           { y: "-100%", duration: 4, ease: "none", delay: 1 },
           0
         )
+        // The slide only clears the viewport once Career is already on screen;
+        // fade over 50-80% of it so the feet/desk don't linger under the navbar
+        .fromTo(
+          ".character-model",
+          { opacity: 1 },
+          { opacity: 0, duration: 1.2, ease: "none", delay: 3 },
+          0
+        )
         .fromTo(".whatIDO", { y: 0 }, { y: "15%", duration: 2 }, 0)
         .to(character.rotation, { x: -0.04, duration: 2, delay: 1 }, 0);
     }
