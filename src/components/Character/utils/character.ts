@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { DRACOLoader, GLTF, GLTFLoader } from "three-stdlib";
+import { GLTF, GLTFLoader } from "three-stdlib";
 import { setCharTimeline, setAllTimeline } from "../../utils/GsapScroll";
 
 const setCharacter = (
@@ -8,10 +8,6 @@ const setCharacter = (
   camera: THREE.PerspectiveCamera
 ) => {
   const loader = new GLTFLoader();
-  const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath("/draco/");
-  dracoLoader.setDecoderConfig({ type: "wasm" });
-  loader.setDRACOLoader(dracoLoader);
 
   const loadCharacter = () => {
     return new Promise<GLTF | null>(async (resolve, reject) => {
@@ -48,7 +44,6 @@ const setCharacter = (
             character!.getObjectByName("footR")!.position.y = 3.36;
             character!.getObjectByName("footL")!.position.y = 3.36;
 
-            dracoLoader.dispose();
             resolve(gltf);
           },
           undefined,

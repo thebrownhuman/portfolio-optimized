@@ -14,7 +14,7 @@ export default defineConfig({
           if (id.includes("vite/preload-helper") || id.includes("commonjsHelpers")) return "helpers";
           if (!id.includes("node_modules")) return;
           if (/node_modules[\/](react|react-dom|scheduler)[\/]/.test(id)) return "react";
-          // The character's loaders (GLTF/Draco/RGBE); shared with drei, so pin it
+          // The character's loaders (GLTF/RGBE); shared with drei, so pin it
           if (id.includes("three-stdlib")) return "three-stdlib";
           if (id.includes("@dimforge") || id.includes("@react-three/rapier")) return "rapier";
           if (id.includes("postprocessing") || id.includes("n8ao")) return "postprocessing";
