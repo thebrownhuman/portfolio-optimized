@@ -9,15 +9,14 @@
   width: var(--cWidth);
   max-width: 1920px;
   margin: auto;
-  z-index: 12;
-  background-color: var(--backgroundColor);
+  z-index: 9;
 }
 .what-box {
   width: 50%;
   display: flex;
   justify-content: center;
   position: relative;
-  z-index: 12;
+  z-index: 9;
 }
 .what-box h2 {
   font-size: calc(4vw + 25px);

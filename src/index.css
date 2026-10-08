@@ -78,12 +78,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Ensure scrollable content sits above the fixed character (z-index: 11) */
-#smooth-wrapper {
-  position: relative;
-  z-index: 12;
-}
-
 .container-main {
   width: 100%;
   margin: auto;
