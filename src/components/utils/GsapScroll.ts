@@ -178,7 +178,7 @@ function buildAllTimeline() {
     scrollTrigger: {
       trigger: ".career-section",
       // Start as the heading scrolls in, so entries reveal with it instead of popping in mid-screen
-      start: "top 75%",
+      start: "top 50%",
       end: "100% center",
       scrub: true,
       invalidateOnRefresh: true,
