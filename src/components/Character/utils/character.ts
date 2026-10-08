@@ -20,7 +20,7 @@ const setCharacter = (
           "/models/character.glb",
           async (gltf) => {
             character = gltf.scene;
-            await renderer.compileAsync(character, camera, scene);
+            // Swap materials before compiling so the compiled programs are the ones rendered
             character.traverse((child: any) => {
               if (child.isMesh) {
                 const mesh = child as THREE.Mesh;
@@ -41,6 +41,7 @@ const setCharacter = (
                 mesh.frustumCulled = true;
               }
             });
+            await renderer.compileAsync(character, camera, scene);
             setCharTimeline(character, camera);
             setAllTimeline();
             character!.getObjectByName("footR")!.position.y = 3.36;
