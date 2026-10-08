@@ -2,7 +2,9 @@ import * as THREE from "three";
 import { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Preload } from "@react-three/drei";
+import { suspend } from "suspend-react";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
+import { loadEnvMap } from "./utils/envMap";
 import {
   BallCollider,
   Physics,
@@ -191,11 +193,7 @@ const TechStack = () => {
             />
           ))}
         </Physics>
-        <Environment
-          files="/models/char_enviorment.hdr"
-          environmentIntensity={0.5}
-          environmentRotation={[0, 4, 2]}
-        />
+        <SharedEnvironment />
         <Preload all />
         {!isMobile && (
           <EffectComposer enableNormalPass={false}>
@@ -206,5 +204,12 @@ const TechStack = () => {
     </div>
   );
 };
+
+// Same HDR texture as the character scene (suspends like <Environment files>,
+// so <Preload> still compiles the balls with the env map)
+function SharedEnvironment() {
+  const map = suspend(loadEnvMap, ["char-env"]);
+  return <Environment map={map} environmentIntensity={0.5} environmentRotation={[0, 4, 2]} />;
+}
 
 export default TechStack;

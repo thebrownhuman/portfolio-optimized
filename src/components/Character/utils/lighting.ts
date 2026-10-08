@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { RGBELoader } from "three-stdlib";
+import { loadEnvMap } from "../../utils/envMap";
 import { gsap } from "gsap";
 
 const setLighting = (scene: THREE.Scene) => {
@@ -12,14 +12,11 @@ const setLighting = (scene: THREE.Scene) => {
   pointLight.position.set(3, 12, 4);
   scene.add(pointLight);
 
-  new RGBELoader()
-    .setPath("/models/")
-    .load("char_enviorment.hdr?v=2", function (texture) {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      scene.environment = texture;
-      scene.environmentIntensity = 0;
-      scene.environmentRotation.set(5.76, 85.85, 1);
-    });
+  loadEnvMap().then((texture) => {
+    scene.environment = texture;
+    scene.environmentIntensity = 0;
+    scene.environmentRotation.set(5.76, 85.85, 1);
+  });
 
   function setPointLight(screenLight: any) {
     if (screenLight.material.opacity > 0.9) {
