@@ -153,12 +153,14 @@ function buildCharTimeline(
           { y: "-100%", duration: 4, ease: "none", delay: 1 },
           0
         )
-        // The slide only clears the viewport once Career is already on screen;
-        // fade over 50-80% of it so the feet/desk don't linger under the navbar
+        // The slide only clears the viewport once Career is already on screen.
+        // Fade while the model's bottom edge rises from 80% to 50% of the viewport:
+        // the What I Do boxes are mostly scrolled off by then, and the Career
+        // heading is still in the lower half (measured at 1920x1080, 1440x900, 1600x700)
         .fromTo(
           ".character-model",
           { opacity: 1 },
-          { opacity: 0, duration: 1.2, ease: "none", delay: 3 },
+          { opacity: 0, duration: 1.2, ease: "none", delay: 1.8 },
           0
         )
         .fromTo(".whatIDO", { y: 0 }, { y: "15%", duration: 2 }, 0)
