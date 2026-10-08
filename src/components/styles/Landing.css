@@ -170,7 +170,7 @@
   font-size: 28px;
   line-height: 28px;
   font-weight: 500;
-  font-family: "Geist", sans-serif;
+  font-family: "Geist", "Geist Fallback", sans-serif;
 }
 
 /* .landing-intro h1 span {
@@ -198,7 +198,7 @@
   margin: 0;
   margin-top: -20px;
   margin-left: 20px;
-  font-family: "Geist", sans-serif;
+  font-family: "Geist", "Geist Fallback", sans-serif;
   font-weight: 600;
   font-size: 32px;
   line-height: 40px;
@@ -219,7 +219,7 @@ h2.landing-info-h2 {
   font-size: 42px;
   width: 120%;
   margin: 0;
-  font-family: "Geist", sans-serif;
+  font-family: "Geist", "Geist Fallback", sans-serif;
   font-weight: 600;
   position: relative;
   margin-left: -5px;
