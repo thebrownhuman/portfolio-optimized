@@ -201,12 +201,6 @@ function buildAllTimeline() {
       0
     )
     .fromTo(
-      ".career-info-box",
-      { opacity: 0 },
-      { opacity: 1, stagger: 0.1, duration: 0.5 },
-      0
-    )
-    .fromTo(
       ".career-dot",
       { animationIterationCount: "infinite" },
       {
@@ -216,6 +210,12 @@ function buildAllTimeline() {
       },
       0
     );
+
+  // One tween per entry instead of a stagger: a staggered fromTo only rendered
+  // the first box's "from", so entries 2+ showed at full opacity before their turn
+  gsap.utils.toArray<HTMLElement>(".career-info-box").forEach((box, i) => {
+    careerTimeline.fromTo(box, { opacity: 0 }, { opacity: 1, duration: 0.5 }, i * 0.1);
+  });
 
   if (window.innerWidth > 1024) {
     careerTimeline.fromTo(
