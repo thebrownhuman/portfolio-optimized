@@ -34,7 +34,7 @@ const Scene = () => {
       antialias: true,
     });
     renderer.setSize(container.width, container.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
     currentDiv.appendChild(renderer.domElement);
@@ -132,11 +132,16 @@ const Scene = () => {
       landingDiv.addEventListener("touchmove", onTouchMove);
       landingDiv.addEventListener("touchend", onTouchEnd);
     }
+    // Skip rendering when character is scrolled off-screen
+    let isVisible = true;
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+    });
+    visibilityObserver.observe(currentDiv);
+
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
-      // Skip rendering when character is scrolled off-screen
-      const visRect = currentDiv.getBoundingClientRect();
-      if (visRect.bottom <= 0 || visRect.top >= window.innerHeight) return;
+      if (!isVisible) return;
       if (headBone) {
         handleHeadRotation(
           headBone,
@@ -158,6 +163,7 @@ const Scene = () => {
     return () => {
       disposed = true;
       cancelAnimationFrame(animFrameId);
+      visibilityObserver.disconnect();
       clearTimeout(resizeTimer);
       if (charCleanup.flickerIntervalId !== undefined) clearInterval(charCleanup.flickerIntervalId);
       if (charCleanup.flickerTl) charCleanup.flickerTl.kill();

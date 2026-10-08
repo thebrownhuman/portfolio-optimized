@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
+import { Environment, Preload } from "@react-three/drei";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import {
   BallCollider,
@@ -24,7 +24,7 @@ const imageUrls = [
 ];
 const textures = imageUrls.map((url) => textureLoader.load(url));
 
-const sphereGeometry = new THREE.SphereGeometry(1, 28, 28);
+const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
 
 const spheres = [...Array(30)].map(() => ({
   scale: [0.7, 1, 0.8, 1, 1][Math.floor(Math.random() * 5)],
@@ -35,7 +35,7 @@ type SphereProps = {
   vec?: THREE.Vector3;
   scale: number;
   r?: typeof THREE.MathUtils.randFloatSpread;
-  material: THREE.MeshPhysicalMaterial;
+  material: THREE.MeshStandardMaterial;
   isActive: boolean;
 };
 
@@ -50,17 +50,17 @@ function SphereGeo({
 
   const tempVec = useMemo(() => new THREE.Vector3(), []);
   useFrame((_state, delta) => {
-    if (!isActive) return;
+    if (!isActive || !api.current) return;
     delta = Math.min(0.1, delta);
     const impulse = vec
-      .copy(api.current!.translation())
+      .copy(api.current.translation())
       .normalize()
       .multiply(
         tempVec.set(
           -50 * delta * scale,
           -150 * delta * scale,
-          -50 * delta * scale
-        )
+          -50 * delta * scale,
+        ),
       );
 
     api.current?.applyImpulse(impulse, true);
@@ -82,8 +82,6 @@ function SphereGeo({
         args={[0.15 * scale, 0.275 * scale]}
       />
       <mesh
-        castShadow
-        receiveShadow
         scale={scale}
         geometry={sphereGeometry}
         material={material}
@@ -108,9 +106,9 @@ function Pointer({ vec = new THREE.Vector3(), isActive }: PointerProps) {
       tempVec.set(
         (pointer.x * viewport.width) / 2,
         (pointer.y * viewport.height) / 2,
-        0
+        0,
       ),
-      0.2
+      0.2,
     );
     ref.current?.setNextKinematicTranslation(targetVec);
   });
@@ -130,63 +128,44 @@ function Pointer({ vec = new THREE.Vector3(), isActive }: PointerProps) {
 const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
 const TechStack = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      const threshold = document
-        .getElementById("work")!
-        .getBoundingClientRect().top;
-      setIsActive(scrollY > threshold);
-    };
-    const clickCleanups: Array<{ el: Element; handler: () => void }> = [];
-    const timeoutIds: number[] = [];
-    const intervalIds: number[] = [];
-    document.querySelectorAll(".header a").forEach((elem) => {
-      const element = elem as HTMLAnchorElement;
-      const handler = () => {
-        const interval = window.setInterval(() => {
-          handleScroll();
-        }, 10);
-        intervalIds.push(interval);
-        const timeout = window.setTimeout(() => {
-          clearInterval(interval);
-        }, 1000);
-        timeoutIds.push(timeout);
-      };
-      element.addEventListener("click", handler);
-      clickCleanups.push({ el: element, handler });
-    });
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clickCleanups.forEach(({ el, handler }) => el.removeEventListener("click", handler));
-      timeoutIds.forEach((id) => clearTimeout(id));
-      intervalIds.forEach((id) => clearInterval(id));
-    };
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsActive(entry.isIntersecting);
+      },
+      { rootMargin: "200px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
   const materials = useMemo(() => {
     return textures.map(
       (texture) =>
-        new THREE.MeshPhysicalMaterial({
+        new THREE.MeshStandardMaterial({
           map: texture,
           emissive: "#ffffff",
           emissiveMap: texture,
           emissiveIntensity: 0.3,
           metalness: 0.5,
           roughness: 1,
-          clearcoat: 0.1,
-        })
+        }),
     );
   }, []);
 
   return (
-    <div className="techstack">
+    <div className="techstack" ref={containerRef}>
       <h2> My Techstack</h2>
 
+      {/* Mounted eagerly so wasm/shader/HDR init happens behind the loader;
+          "demand" renders once to compile, then idles while off-screen */}
       <Canvas
-        shadows
+        frameloop={isActive ? "always" : "demand"}
+        dpr={[1, 1.5]}
         gl={{ alpha: true, stencil: false, depth: false, antialias: false }}
         camera={{ position: [0, 0, 20], fov: 32.5, near: 1, far: 100 }}
         onCreated={(state) => (state.gl.toneMappingExposure = 1.5)}
@@ -198,11 +177,9 @@ const TechStack = () => {
           penumbra={1}
           angle={0.2}
           color="white"
-          castShadow
-          shadow-mapSize={[512, 512]}
         />
         <directionalLight position={[0, 5, -4]} intensity={2} />
-        <Physics gravity={[0, 0, 0]}>
+        <Physics gravity={[0, 0, 0]} paused={!isActive}>
           <Pointer isActive={isActive} />
           {spheres.map((props, i) => (
             <SphereGeo
@@ -218,6 +195,7 @@ const TechStack = () => {
           environmentIntensity={0.5}
           environmentRotation={[0, 4, 2]}
         />
+        <Preload all />
         {!isMobile && (
           <EffectComposer enableNormalPass={false}>
             <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
