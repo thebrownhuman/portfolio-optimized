@@ -14,11 +14,11 @@ See `tasks/review.md` for the findings. Branch: `perf/optimize`. One commit per 
 - [ ] Scene: render on demand after the intro (deferred)
 
 ## Phase 2: Main thread (P1)
-- [ ] Fix the stale `character` in resize (#5), remove the useless state
-- [ ] Single debounced resize path, remove the splitText refresh-loop (#6)
+- [x] Fix the stale `character` in resize (#5), remove the useless state
+- [x] Single debounced resize path, remove the splitText refresh-loop (#6)
 - [x] Delete the TechStack scroll/click/interval handlers (#7)
-- [ ] Idle-stop the Cursor + SocialIcons rAF; SocialIcons → transform (#8)
-- [ ] Pause the flicker interval/timeline when off-screen
+- [x] Idle-stop the Cursor + SocialIcons rAF; SocialIcons → transform (#8)
+- [x] Pause the flicker interval/timeline when off-screen
 
 ## Phase 3: Feel + CSS
 - [ ] ScrollSmoother `smooth` ~0.9, `speed` 1, `effects:false`, kill on cleanup
@@ -47,3 +47,22 @@ Notes:
 - Lazy-mounting the TechStack Canvas on IO moved ~1s of rapier wasm + shader compile + HDR/texture upload into mid-scroll (long tasks of 1s at the section entry). Reverted to eager mount + `frameloop="demand"` while off-screen + drei `<Preload all />` so compile/upload happens behind the loader.
 - Remaining ~200ms spike at TechStack entry (scrollY~2345) = physics/frameloop resume.
 - Unthrottled the GPU is never the limit on this machine (240fps cap headless); gains on weak GPUs are not measured here.
+
+### Phase 2 (worker1)
+Method changed: production builds (`vite build`) of HEAD vs working tree served side by side with `vite preview`, interleaved runs, same 4x CPU throttle. The dev-server A/B via git stash was unusable (HMR churn gave 8 fps on both).
+
+| | scroll FPS | scroll p95 | long tasks (count / total) | scroll main-thread task time |
+|---|---|---|---|---|
+| Before (96964aa) | 40-41 | 46ms | 17-20 / 1.1-1.4s | 20.0-20.3s |
+| After | 44-50 | 34-42ms | 4-16 / 0.4-1.0s | 18.4-19.8s |
+
+Idle at the top and bottom of the page is saturated by WebGL in both builds (~2.97s of task time per 3s at 4x throttle). That is the character render loop at the top and TechStack (on-screen by design) at the bottom. Render-on-demand for the character is the remaining lever.
+
+Extra findings fixed:
+- The character IO never reported hidden: after tl3 the model sits at bottom = 0, and an edge-adjacent target still counts as `isIntersecting`. It now uses `intersectionRatio > 0`.
+- `handleHeadRotation` read `window.scrollY`/`innerWidth` every frame (182ms self time in a 3s profile). It now uses cached values.
+- The landing text loops (`initialFX`, repeat -1) ran forever. They now pause when the landing section is off-screen.
+- SocialIcons rects are refreshed on resize only. The bar is `position: fixed`, so scroll never moves it.
+
+Resize bug verified: on HEAD, after a resize the character stays at translateX -750px whatever the scroll position. After the fix it animates (-750 -> -1125 -> -930/-500 across scroll positions). No console errors.
+TechStack entry spike (~150-200ms): resuming a viewport early (rootMargin 100%) moves it off-screen but does not remove it. The cost is physics/frameloop first frames.

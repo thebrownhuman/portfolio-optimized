@@ -34,16 +34,21 @@ export const handleTouchEnd = (
   }, 2000);
 };
 
+// Cached so the per-frame head rotation never touches layout-dependent window props
+let viewportWidth = window.innerWidth;
+window.addEventListener("resize", () => (viewportWidth = window.innerWidth));
+
 export const handleHeadRotation = (
   headBone: THREE.Object3D,
   mouseX: number,
   mouseY: number,
   interpolationX: number,
   interpolationY: number,
-  lerp: (x: number, y: number, t: number) => number
+  lerp: (x: number, y: number, t: number) => number,
+  scrollY: number
 ) => {
   if (!headBone) return;
-  if (window.scrollY < 200) {
+  if (scrollY < 200) {
     const maxRotation = Math.PI / 6;
     headBone.rotation.y = lerp(
       headBone.rotation.y,
@@ -74,7 +79,7 @@ export const handleHeadRotation = (
       );
     }
   } else {
-    if (window.innerWidth > 1024) {
+    if (viewportWidth > 1024) {
       headBone.rotation.x = lerp(headBone.rotation.x, -0.4, 0.03);
       headBone.rotation.y = lerp(headBone.rotation.y, -0.3, 0.03);
     }

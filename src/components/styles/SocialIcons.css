@@ -32,16 +32,13 @@
   display: flex;
 }
 .social-icons a {
-  --siLeft: 50%;
-  --siTop: 50%;
   position: absolute;
-  left: var(--siLeft, 50%);
-  top: var(--siTop, 50%);
+  left: 50%;
+  top: 50%;
   transform: translate(-50%, -50%);
   display: flex;
   font-size: 23px;
-  will-change: left, top;
-  transition: transform 0.3s ease-out;
+  will-change: transform;
 }
 .resume-button {
   position: absolute;

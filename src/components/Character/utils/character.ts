@@ -12,8 +12,6 @@ const setCharacter = (
   dracoLoader.setDecoderPath("/draco/");
   loader.setDRACOLoader(dracoLoader);
 
-  const cleanup: { flickerIntervalId?: ReturnType<typeof setInterval>; flickerTl?: any } = {};
-
   const loadCharacter = () => {
     return new Promise<GLTF | null>(async (resolve, reject) => {
       try {
@@ -43,9 +41,7 @@ const setCharacter = (
                 mesh.frustumCulled = true;
               }
             });
-            const flickerHandles = setCharTimeline(character, camera);
-            cleanup.flickerIntervalId = flickerHandles.flickerIntervalId;
-            cleanup.flickerTl = flickerHandles.flickerTl;
+            setCharTimeline(character, camera);
             setAllTimeline();
             character!.getObjectByName("footR")!.position.y = 3.36;
             character!.getObjectByName("footL")!.position.y = 3.36;
@@ -66,7 +62,7 @@ const setCharacter = (
     });
   };
 
-  return { loadCharacter, cleanup };
+  return { loadCharacter };
 };
 
 export default setCharacter;

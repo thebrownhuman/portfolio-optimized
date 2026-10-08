@@ -12,68 +12,82 @@ import HoverLinks from "./HoverLinks";
 const SocialIcons = () => {
   useEffect(() => {
     const social = document.getElementById("social") as HTMLElement;
-    const listeners: Array<{ target: EventTarget; event: string; handler: (e: any) => void }> = [];
 
-    // Collect all icon state for a single shared RAF loop
+    // Icon state for a single shared RAF loop; rects are cached (the bar is position: fixed, so only resize moves it)
     const icons: Array<{
       link: HTMLElement;
+      elem: HTMLElement;
+      rect: DOMRect;
       mouseX: number;
       mouseY: number;
       currentX: number;
       currentY: number;
-      elem: HTMLElement;
     }> = [];
 
     social.querySelectorAll("span").forEach((item) => {
       const elem = item as HTMLElement;
-      const link = elem.querySelector("a") as HTMLElement;
-      const initRect = elem.getBoundingClientRect();
-      const state = {
-        link,
+      const rect = elem.getBoundingClientRect();
+      icons.push({
+        link: elem.querySelector("a") as HTMLElement,
         elem,
-        mouseX: initRect.width / 2,
-        mouseY: initRect.height / 2,
-        currentX: 0,
-        currentY: 0,
-      };
-      icons.push(state);
-
-      const onMouseMove = (e: MouseEvent) => {
-        const rect = elem.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        if (x < 40 && x > 10 && y < 40 && y > 5) {
-          state.mouseX = x;
-          state.mouseY = y;
-        } else {
-          state.mouseX = rect.width / 2;
-          state.mouseY = rect.height / 2;
-        }
-      };
-
-      document.addEventListener("mousemove", onMouseMove);
-      listeners.push({ target: document, event: "mousemove", handler: onMouseMove });
+        rect,
+        mouseX: rect.width / 2,
+        mouseY: rect.height / 2,
+        currentX: rect.width / 2,
+        currentY: rect.height / 2,
+      });
     });
 
-    // Single RAF loop updates all icons
-    let rafId: number;
-    const updateAll = () => {
-      icons.forEach((s) => {
-        s.currentX += (s.mouseX - s.currentX) * 0.1;
-        s.currentY += (s.mouseY - s.currentY) * 0.1;
-        s.link.style.setProperty("--siLeft", `${s.currentX}px`);
-        s.link.style.setProperty("--siTop", `${s.currentY}px`);
-      });
-      rafId = requestAnimationFrame(updateAll);
+    const refreshRects = () => {
+      icons.forEach((s) => (s.rect = s.elem.getBoundingClientRect()));
     };
-    rafId = requestAnimationFrame(updateAll);
+
+    // Runs only while an icon is moving; restarted on mousemove
+    let rafId: number | undefined;
+    const updateAll = () => {
+      rafId = undefined;
+      let moving = false;
+      icons.forEach((s) => {
+        const dx = s.mouseX - s.currentX;
+        const dy = s.mouseY - s.currentY;
+        if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05) {
+          s.currentX = s.mouseX;
+          s.currentY = s.mouseY;
+        } else {
+          s.currentX += dx * 0.1;
+          s.currentY += dy * 0.1;
+          moving = true;
+        }
+        // Offset from the centered resting position
+        const x = s.currentX - s.rect.width / 2;
+        const y = s.currentY - s.rect.height / 2;
+        s.link.style.transform = `translate(calc(${x}px - 50%), calc(${y}px - 50%))`;
+      });
+      if (moving) rafId = requestAnimationFrame(updateAll);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      icons.forEach((s) => {
+        const x = e.clientX - s.rect.left;
+        const y = e.clientY - s.rect.top;
+        if (x < 40 && x > 10 && y < 40 && y > 5) {
+          s.mouseX = x;
+          s.mouseY = y;
+        } else {
+          s.mouseX = s.rect.width / 2;
+          s.mouseY = s.rect.height / 2;
+        }
+      });
+      if (rafId === undefined) rafId = requestAnimationFrame(updateAll);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("resize", refreshRects);
 
     return () => {
-      cancelAnimationFrame(rafId);
-      listeners.forEach(({ target, event, handler }) =>
-        target.removeEventListener(event, handler)
-      );
+      if (rafId !== undefined) cancelAnimationFrame(rafId);
+      document.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("resize", refreshRects);
     };
   }, []);
 

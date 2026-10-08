@@ -76,8 +76,18 @@ export function initialFX() {
   var landingText4 = new SplitText(".landing-h2-1", TextProps);
   var landingText5 = new SplitText(".landing-h2-2", TextProps);
 
-  LoopText(landingText2, landingText3);
-  LoopText(landingText4, landingText5);
+  const loops = [
+    LoopText(landingText2, landingText3),
+    LoopText(landingText4, landingText5),
+  ];
+
+  // The loops repeat forever; only run them while the landing section is on screen
+  const landing = document.querySelector(".landing-section");
+  if (landing) {
+    new IntersectionObserver(([entry]) => {
+      loops.forEach((tl) => tl.paused(!entry.isIntersecting));
+    }).observe(landing);
+  }
 }
 
 function LoopText(Text1: SplitText, Text2: SplitText) {
@@ -133,4 +143,5 @@ function LoopText(Text1: SplitText, Text2: SplitText) {
       },
       1
     );
+  return tl;
 }

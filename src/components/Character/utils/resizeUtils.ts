@@ -1,9 +1,5 @@
 import * as THREE from "three";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { setCharTimeline, setAllTimeline } from "../../utils/GsapScroll";
-
-let prevFlickerIntervalId: ReturnType<typeof setInterval> | undefined;
-let prevFlickerTl: any;
 
 export default function handleResize(
   renderer: THREE.WebGLRenderer,
@@ -19,18 +15,7 @@ export default function handleResize(
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
 
-  // Clean up previous flicker resources before recreating
-  if (prevFlickerIntervalId !== undefined) clearInterval(prevFlickerIntervalId);
-  if (prevFlickerTl) prevFlickerTl.kill();
-
-  const workTrigger = ScrollTrigger.getById("work");
-  ScrollTrigger.getAll().forEach((trigger) => {
-    if (trigger != workTrigger) {
-      trigger.kill();
-    }
-  });
-  const result = setCharTimeline(character, camera);
-  prevFlickerIntervalId = result.flickerIntervalId;
-  prevFlickerTl = result.flickerTl;
+  // Rebuild the width-dependent timelines; their contexts revert only their own triggers
+  setCharTimeline(character, camera);
   setAllTimeline();
 }

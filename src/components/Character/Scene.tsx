@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
@@ -12,6 +12,8 @@ import {
 } from "./utils/mouseUtils";
 import setAnimations from "./utils/animationUtils";
 import { setProgress } from "../Loading";
+import { killCharTimeline } from "../utils/GsapScroll";
+import onDebouncedResize from "../utils/debouncedResize";
 
 const Scene = () => {
   const canvasDiv = useRef<HTMLDivElement | null>(null);
@@ -19,7 +21,6 @@ const Scene = () => {
   const sceneRef = useRef(new THREE.Scene());
   const { setLoading } = useLoading();
 
-  const [character, setChar] = useState<THREE.Object3D | null>(null);
   useEffect(() => {
     const currentDiv = canvasDiv.current;
     if (!currentDiv) return;
@@ -78,21 +79,15 @@ const Scene = () => {
 
     const light = setLighting(scene);
     let progress = setProgress((value) => setLoading(value));
-    const { loadCharacter, cleanup: charCleanup } = setCharacter(renderer, scene, camera);
-
-    let resizeTimer: number;
-    const onResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(() => handleResize(renderer, camera, canvasDiv, character!), 200);
-    };
+    const { loadCharacter } = setCharacter(renderer, scene, camera);
+    let removeResize: (() => void) | undefined;
 
     loadCharacter().then(async (gltf) => {
       if (disposed || !gltf) return;
       const animations = setAnimations(gltf);
       hoverDivRef.current && animations.hover(gltf, hoverDivRef.current);
       mixer = animations.mixer;
-      let character = gltf.scene;
-      setChar(character);
+      const character = gltf.scene;
       scene.add(character);
       headBone = character.getObjectByName("spine006") || null;
       screenLight = character.getObjectByName("screenlight") || null;
@@ -105,11 +100,16 @@ const Scene = () => {
           animations.startIntro();
         }, 2500);
       });
-      window.addEventListener("resize", onResize);
+      removeResize = onDebouncedResize(() =>
+        handleResize(renderer, camera, canvasDiv, character)
+      );
     });
 
     let mouse = { x: 0, y: 0 },
       interpolation = { x: 0.1, y: 0.2 };
+    let scrollY = window.scrollY;
+    const onScroll = () => (scrollY = window.scrollY);
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     const onMouseMove = (event: MouseEvent) => {
       handleMouseMove(event, (x, y) => (mouse = { x, y }));
@@ -135,7 +135,8 @@ const Scene = () => {
     // Skip rendering when character is scrolled off-screen
     let isVisible = true;
     const visibilityObserver = new IntersectionObserver(([entry]) => {
-      isVisible = entry.isIntersecting;
+      // ratio, not isIntersecting: after the scroll timeline the model sits edge-adjacent (bottom = 0)
+      isVisible = entry.intersectionRatio > 0;
     });
     visibilityObserver.observe(currentDiv);
 
@@ -149,7 +150,8 @@ const Scene = () => {
           mouse.y,
           interpolation.x,
           interpolation.y,
-          THREE.MathUtils.lerp
+          THREE.MathUtils.lerp,
+          scrollY
         );
         light.setPointLight(screenLight);
       }
@@ -164,14 +166,13 @@ const Scene = () => {
       disposed = true;
       cancelAnimationFrame(animFrameId);
       visibilityObserver.disconnect();
-      clearTimeout(resizeTimer);
-      if (charCleanup.flickerIntervalId !== undefined) clearInterval(charCleanup.flickerIntervalId);
-      if (charCleanup.flickerTl) charCleanup.flickerTl.kill();
+      removeResize?.();
+      killCharTimeline();
       progress.dispose();
       scene.clear();
       renderer.dispose();
-      window.removeEventListener("resize", onResize);
       document.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("scroll", onScroll);
       if (currentDiv.contains(renderer.domElement)) {
         currentDiv.removeChild(renderer.domElement);
       }

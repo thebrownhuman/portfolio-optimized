@@ -9,24 +9,35 @@ const Cursor = () => {
     const cursor = cursorRef.current!;
     const mousePos = { x: 0, y: 0 };
     const cursorPos = { x: 0, y: 0 };
-    let rafId: number;
+    let rafId: number | undefined;
+
+    // Runs only while the cursor is catching up to the mouse; restarted on mousemove
+    const loop = () => {
+      rafId = undefined;
+      if (hover) return;
+      const delay = 6;
+      const dx = mousePos.x - cursorPos.x;
+      const dy = mousePos.y - cursorPos.y;
+      if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+        cursorPos.x = mousePos.x;
+        cursorPos.y = mousePos.y;
+      } else {
+        cursorPos.x += dx / delay;
+        cursorPos.y += dy / delay;
+        rafId = requestAnimationFrame(loop);
+      }
+      cursor.style.transform = `translate3d(${cursorPos.x}px, ${cursorPos.y}px, 0)`;
+    };
+    const startLoop = () => {
+      if (rafId === undefined) rafId = requestAnimationFrame(loop);
+    };
 
     const onMouseMove = (e: MouseEvent) => {
       mousePos.x = e.clientX;
       mousePos.y = e.clientY;
+      startLoop();
     };
     document.addEventListener("mousemove", onMouseMove);
-
-    const loop = () => {
-      if (!hover) {
-        const delay = 6;
-        cursorPos.x += (mousePos.x - cursorPos.x) / delay;
-        cursorPos.y += (mousePos.y - cursorPos.y) / delay;
-        cursor.style.transform = `translate3d(${cursorPos.x}px, ${cursorPos.y}px, 0)`;
-      }
-      rafId = requestAnimationFrame(loop);
-    };
-    rafId = requestAnimationFrame(loop);
 
     const overHandlers: Array<{ el: HTMLElement; handler: (e: MouseEvent) => void }> = [];
     const outHandlers: Array<{ el: HTMLElement; handler: () => void }> = [];
@@ -50,6 +61,7 @@ const Cursor = () => {
       const outHandler = () => {
         cursor.classList.remove("cursor-disable", "cursor-icons");
         hover = false;
+        startLoop();
       };
 
       element.addEventListener("mouseover", overHandler);
@@ -59,7 +71,7 @@ const Cursor = () => {
     });
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafId !== undefined) cancelAnimationFrame(rafId);
       document.removeEventListener("mousemove", onMouseMove);
       overHandlers.forEach(({ el, handler }) => el.removeEventListener("mouseover", handler));
       outHandlers.forEach(({ el, handler }) => el.removeEventListener("mouseout", handler));

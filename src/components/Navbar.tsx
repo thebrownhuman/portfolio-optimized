@@ -36,13 +36,7 @@ const Navbar = () => {
       clickHandlers.push({ el: element, handler });
     });
 
-    const onResize = () => {
-      ScrollSmoother.refresh(true);
-    };
-    window.addEventListener("resize", onResize);
-
     return () => {
-      window.removeEventListener("resize", onResize);
       clickHandlers.forEach(({ el, handler }) => el.removeEventListener("click", handler));
     };
   }, []);

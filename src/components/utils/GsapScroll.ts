@@ -1,14 +1,36 @@
 import * as THREE from "three";
 import gsap from "gsap";
 
+let charCtx: gsap.Context | undefined;
+let allCtx: gsap.Context | undefined;
+
+// Reverts and rebuilds only these timelines; other ScrollTriggers are untouched
 export function setCharTimeline(
   character: THREE.Object3D<THREE.Object3DEventMap> | null,
   camera: THREE.PerspectiveCamera
 ) {
-  let intensity: number = 0;
-  const flickerIntervalId = setInterval(() => {
-    intensity = Math.random();
-  }, 200);
+  charCtx?.revert();
+  charCtx = gsap.context(() => buildCharTimeline(character, camera));
+}
+
+export function killCharTimeline() {
+  charCtx?.revert();
+  charCtx = undefined;
+  allCtx?.revert();
+  allCtx = undefined;
+}
+
+function buildCharTimeline(
+  character: THREE.Object3D<THREE.Object3DEventMap> | null,
+  camera: THREE.PerspectiveCamera
+) {
+  let flickerTl: gsap.core.Timeline | undefined;
+  // Flicker only while the monitor is on screen: after tl2 starts, before tl3 scrolls it away
+  const syncFlicker = () => {
+    if (!flickerTl) return;
+    const on = tl2.progress() > 0 && tl3.progress() < 1;
+    if (on === flickerTl.paused()) flickerTl.paused(!on);
+  };
   const tl1 = gsap.timeline({
     scrollTrigger: {
       trigger: ".landing-section",
@@ -25,6 +47,7 @@ export function setCharTimeline(
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
+      onUpdate: () => syncFlicker(),
     },
   });
   const tl3 = gsap.timeline({
@@ -34,10 +57,10 @@ export function setCharTimeline(
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
+      onUpdate: () => syncFlicker(),
     },
   });
   let screenLight: any, monitor: any;
-  let flickerTl: gsap.core.Timeline | undefined;
   character?.children.forEach((object: any) => {
     if (object.name === "Plane004") {
       object.children.forEach((child: any) => {
@@ -53,8 +76,8 @@ export function setCharTimeline(
       object.material.transparent = true;
       object.material.opacity = 0;
       object.material.emissive.set("#B0F5EA");
-      flickerTl = gsap.timeline({ repeat: -1, repeatRefresh: true }).to(object.material, {
-        emissiveIntensity: () => intensity * 8,
+      flickerTl = gsap.timeline({ repeat: -1, repeatRefresh: true, paused: true }).to(object.material, {
+        emissiveIntensity: () => Math.random() * 8,
         duration: () => Math.random() * 0.6,
         delay: () => Math.random() * 0.1,
       });
@@ -120,10 +143,15 @@ export function setCharTimeline(
         .to(character.rotation, { x: -0.04, duration: 2, delay: 1 }, 0);
     }
   }
-  return { flickerIntervalId, flickerTl };
+  syncFlicker();
 }
 
 export function setAllTimeline() {
+  allCtx?.revert();
+  allCtx = gsap.context(buildAllTimeline);
+}
+
+function buildAllTimeline() {
   const careerTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".career-section",

@@ -138,7 +138,8 @@ const TechStack = () => {
       ([entry]) => {
         setIsActive(entry.isIntersecting);
       },
-      { rootMargin: "200px 0px" },
+      // Resume a viewport early so the first-frame cost lands before the section is visible
+      { rootMargin: "100% 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
