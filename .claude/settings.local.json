@@ -26,7 +26,10 @@
       "Bash(npx tsc:*)",
       "Bash(npx vite:*)",
       "Bash(done)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(npx cwebp:*)",
+      "Bash(node -e \"const sharp = require\\(''sharp''\\); sharp\\(''public/images/preview.png''\\).webp\\({quality: 80}\\).toFile\\(''public/images/preview.webp''\\).then\\(i => console.log\\(''Done:'', i.size, ''bytes''\\)\\)\")",
+      "Bash(npm run:*)"
     ]
   }
 }

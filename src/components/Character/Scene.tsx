@@ -78,10 +78,13 @@ const Scene = () => {
 
     const light = setLighting(scene);
     let progress = setProgress((value) => setLoading(value));
-    const { loadCharacter } = setCharacter(renderer, scene, camera);
+    const { loadCharacter, cleanup: charCleanup } = setCharacter(renderer, scene, camera);
 
-    const onResize = () =>
-      handleResize(renderer, camera, canvasDiv, character!);
+    let resizeTimer: number;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => handleResize(renderer, camera, canvasDiv, character!), 200);
+    };
 
     loadCharacter().then(async (gltf) => {
       if (disposed || !gltf) return;
@@ -131,6 +134,9 @@ const Scene = () => {
     }
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
+      // Skip rendering when character is scrolled off-screen
+      const visRect = currentDiv.getBoundingClientRect();
+      if (visRect.bottom <= 0 || visRect.top >= window.innerHeight) return;
       if (headBone) {
         handleHeadRotation(
           headBone,
@@ -152,6 +158,9 @@ const Scene = () => {
     return () => {
       disposed = true;
       cancelAnimationFrame(animFrameId);
+      clearTimeout(resizeTimer);
+      if (charCleanup.flickerIntervalId !== undefined) clearInterval(charCleanup.flickerIntervalId);
+      if (charCleanup.flickerTl) charCleanup.flickerTl.kill();
       progress.dispose();
       scene.clear();
       renderer.dispose();

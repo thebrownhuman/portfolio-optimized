@@ -7,22 +7,21 @@ interface Props {
 }
 
 const WorkImage = (props: Props) => {
+  const Wrapper = props.link ? 'a' : 'div';
+  const wrapperProps = props.link
+    ? { href: props.link, target: "_blank" as const, rel: "noopener noreferrer", "data-cursor": "disable" }
+    : { "data-cursor": "disable" };
+
   return (
     <div className="work-image">
-      <a
-        className="work-image-in"
-        href={props.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-cursor={"disable"}
-      >
+      <Wrapper className="work-image-in" {...wrapperProps}>
         {props.link && (
           <div className="work-link">
             <MdArrowOutward />
           </div>
         )}
         <img src={props.image} alt={props.alt} />
-      </a>
+      </Wrapper>
     </div>
   );
 };

@@ -43,13 +43,21 @@ const Contact = () => {
             >
               Instagram <MdArrowOutward />
             </a>
+            <a
+              href="https://x.com/thebrownhuman"
+              target="_blank" rel="noopener noreferrer"
+              data-cursor="disable"
+              className="contact-social"
+            >
+              Twitter <MdArrowOutward />
+            </a>
           </div>
           <div className="contact-box">
             <h2>
               Designed and Developed <br /> by <span>Shivansh Mishra</span>
             </h2>
             <h5>
-              <MdCopyright /> 2025
+              <MdCopyright /> {new Date().getFullYear()}
             </h5>
           </div>
         </div>

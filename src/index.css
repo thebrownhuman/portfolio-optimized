@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap");
 
 :root {
   font-family: "Geist", sans-serif;
@@ -77,6 +76,12 @@ body {
 .main-body {
   max-width: 100vw;
   overflow-x: hidden;
+}
+
+/* Ensure scrollable content sits above the fixed character (z-index: 11) */
+#smooth-wrapper {
+  position: relative;
+  z-index: 12;
 }
 
 .container-main {

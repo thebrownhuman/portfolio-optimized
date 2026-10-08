@@ -21,9 +21,7 @@
   position: fixed;
   width: 300px;
   height: 300px;
-  background-color: #22d3ee;
-  box-shadow: inset -50px 40px 50px rgba(0, 180, 180, 0.6);
-  filter: blur(60px);
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(34, 211, 238, 0) 70%);
   border-radius: 50%;
   animation: loadingCircle 5s linear infinite;
 }
@@ -61,9 +59,7 @@
   display: none;
   width: 300px;
   height: 300px;
-  background-color: #22d3ee;
-  box-shadow: inset -50px 40px 50px rgba(0, 180, 180, 0.6);
-  filter: blur(50px);
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(34, 211, 238, 0) 70%);
   border-radius: 50%;
   animation: loadingCircle2 5s linear infinite;
 }
@@ -79,10 +75,7 @@
   width: 400px;
   height: 400px;
   z-index: 1;
-  background-color: #22d3ee;
-  transform: translate(-50%, 36%) scaleX(1.4);
-  box-shadow: inset 66px 35px 85px 0px rgba(0, 180, 180, 0.65);
-  filter: blur(50px);
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.65) 0%, rgba(34, 211, 238, 0) 70%);
   border-radius: 50%;
   top: 50%;
   left: 50%;

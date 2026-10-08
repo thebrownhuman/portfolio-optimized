@@ -48,6 +48,7 @@ function SphereGeo({
 }: SphereProps) {
   const api = useRef<RapierRigidBody | null>(null);
 
+  const tempVec = useMemo(() => new THREE.Vector3(), []);
   useFrame((_state, delta) => {
     if (!isActive) return;
     delta = Math.min(0.1, delta);
@@ -55,7 +56,7 @@ function SphereGeo({
       .copy(api.current!.translation())
       .normalize()
       .multiply(
-        new THREE.Vector3(
+        tempVec.set(
           -50 * delta * scale,
           -150 * delta * scale,
           -50 * delta * scale
@@ -99,11 +100,12 @@ type PointerProps = {
 
 function Pointer({ vec = new THREE.Vector3(), isActive }: PointerProps) {
   const ref = useRef<RapierRigidBody>(null);
+  const tempVec = useMemo(() => new THREE.Vector3(), []);
 
   useFrame(({ pointer, viewport }) => {
     if (!isActive) return;
     const targetVec = vec.lerp(
-      new THREE.Vector3(
+      tempVec.set(
         (pointer.x * viewport.width) / 2,
         (pointer.y * viewport.height) / 2,
         0
@@ -138,20 +140,30 @@ const TechStack = () => {
         .getBoundingClientRect().top;
       setIsActive(scrollY > threshold);
     };
+    const clickCleanups: Array<{ el: Element; handler: () => void }> = [];
+    const timeoutIds: number[] = [];
+    const intervalIds: number[] = [];
     document.querySelectorAll(".header a").forEach((elem) => {
       const element = elem as HTMLAnchorElement;
-      element.addEventListener("click", () => {
-        const interval = setInterval(() => {
+      const handler = () => {
+        const interval = window.setInterval(() => {
           handleScroll();
         }, 10);
-        setTimeout(() => {
+        intervalIds.push(interval);
+        const timeout = window.setTimeout(() => {
           clearInterval(interval);
         }, 1000);
-      });
+        timeoutIds.push(timeout);
+      };
+      element.addEventListener("click", handler);
+      clickCleanups.push({ el: element, handler });
     });
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      clickCleanups.forEach(({ el, handler }) => el.removeEventListener("click", handler));
+      timeoutIds.forEach((id) => clearTimeout(id));
+      intervalIds.forEach((id) => clearInterval(id));
     };
   }, []);
   const materials = useMemo(() => {
