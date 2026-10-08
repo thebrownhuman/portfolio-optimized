@@ -177,7 +177,8 @@ function buildAllTimeline() {
   const careerTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".career-section",
-      start: "top 30%",
+      // Start as the heading scrolls in, so entries reveal with it instead of popping in mid-screen
+      start: "top 75%",
       end: "100% center",
       scrub: true,
       invalidateOnRefresh: true,
