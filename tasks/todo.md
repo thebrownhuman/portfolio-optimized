@@ -11,7 +11,7 @@ See `tasks/review.md` for the findings. Branch: `perf/optimize`. One commit per 
 - [x] TechStack: remove shadows, use MeshStandardMaterial, 20 segments
 - [x] Scene: IO visibility flag instead of per-frame `getBoundingClientRect`
 - [x] Scene: DPR cap 1.5
-- [ ] Scene: render on demand after the intro (deferred)
+- [x] Scene: render on demand (round 2, 30fps idle cap)
 
 ## Phase 2: Main thread (P1)
 - [x] Fix the stale `character` in resize (#5), remove the useless state
@@ -25,10 +25,13 @@ See `tasks/review.md` for the findings. Branch: `perf/optimize`. One commit per 
 - [x] Cursor: tested `mix-blend-mode` cost (none measurable, kept); career-dot shadow animation → opacity on `::after`
 
 ## Phase 4: Load (P2)
-- [ ] Clone materials before `compileAsync`
-- [ ] Stop blocking on the image preload; `loading="lazy"`
-- [ ] Draco wasm-only, share the HDR, throttle the loading-progress updates
-- [ ] Vite manualChunks (rapier / postprocessing split)
+- [x] Clone materials before `compileAsync` (no measurable gain: programs were already cached)
+- [x] Stop blocking on the image preload; `loading="lazy"`
+- [x] Draco wasm-only (model isn't Draco-compressed; decoder kept working for later), throttle the loading-progress updates
+- [ ] Share the HDR between the character and TechStack
+- [x] Vite manualChunks (rapier / postprocessing split)
+- [x] Character render on demand (Scene.tsx)
+- [x] CLS: loader exit without layout animation
 
 ## Phase 5: Hygiene (P3)
 - [ ] Types, non-null asserts, deps, gitignore tsbuildinfo, favicon, nginx draco cache
@@ -81,3 +84,31 @@ Same method (production builds, interleaved, 4x throttle), Phase 2 build vs Phas
 - Verified on the Phase 3 build: resize then scroll still animates the character; no console errors.
 
 Cumulative from 96964aa (Phase 1) to Phase 3, scroll under 4x throttle: FPS 40-41 -> 48-55, long tasks 1.1-1.4s -> 0.27-0.44s.
+
+### Round 2 (worker1, 2026-10-09): render on demand, Phase 4 load items, CLS
+Commits: 3c432c7 (render on demand), 8e899e4 (materials before compile), 50281f0 (preload not blocking), ee1bbe7 (Draco wasm), 706febb (loader counter rAF), dd02da4 (manualChunks), 4f3d7fa (CLS).
+
+Perf, production builds dfaccc2 vs 4f3d7fa, 1440x900 @ DPR 2, 4x CPU throttle, 3 interleaved runs. Headless rAF is uncapped (~220-240/s), so character renders/s is reported next to busy %.
+
+| | before (dfaccc2) | after (4f3d7fa) |
+|---|---|---|
+| Idle at top, 10s: character renders/s | 216-220 | 30 |
+| Idle at top: script time / 10s | 3.73-3.87s | 1.10-1.21s |
+| Idle at top: main thread busy | 74-76% | 48-52% |
+| Scroll pass: script time | 16.4s | 12.9-13.1s |
+| Scroll pass: FPS / p95 frame | 149-153 / 12.5ms | 173-180 / 8.5ms |
+| Loader reaches 100% | 4.12-4.22s | 3.64-3.67s |
+| Page reveal (main-active) | 6.69-6.80s | 6.20-6.26s |
+| CLS 1440x900 / 390x844 | 1.56 / 2.31 | 0.005 / 0.002 |
+
+Idle-cap choice (same method): renders/s 60 / 30 / 20 gave script 1.65 / 1.10 / 0.91s per 10s. 30 keeps most of the win with smoother loops than 20. The remaining ~45% busy floor is shared (GSAP ticker, smoother, landing text loops, the bench's own rAF probe).
+
+Chunks (kB, min): before index 152, three+stdlib 688, TechStack 2,479 (rapier + postprocessing + drei inlined). After: react 146, three 682, three-stdlib 84, rapier 2,082, postprocessing(+drei) 338, TechStack 27, helpers 1. The character never imported the TechStack chunk, so it was not blocked on rapier before either; the split gives parallel TechStack downloads and stable vendor caching (TechStack canvas ~60-80 ms earlier at 20 Mbps / 40 ms).
+
+Notes:
+- B1 (materials before compileAsync): 19 program links before and after; cloned materials already hit three's program cache.
+- B3: character.glb is not Draco-compressed, so no decoder is fetched. public/draco had a .js + a .wasm matching no three release and no wasm wrapper; replaced with three's gltf wrapper + wasm (verified they instantiate) and dropped the 720 kB .js.
+- B4: counter steps capped at 4/frame so a blocked frame can't jump 57 -> 100.
+- CLS: ~165 shifts of .loading-wrap (min-width/min-height exit animation). Now a fixed-size layer revealed with clip-path keyframes sampled from the old curve. Frozen-frame diff of the exit vs before: <= 0.04% with the mouse over the pill; 0.5% / 2.5% (desktop/mobile) at 150 ms without a mouse (glow at its unset position).
+
+Visual verification (dev servers, StrictMode, served code curl-checked), dfaccc2 vs 4f3d7fa, shots in tasks/shots/verify-r2 (not committed): 1920, 1440, 1146 and 390 mobile; loading, intro end, 11 scroll positions; 1440 interactions; resize 1440 -> 1100 -> 1440. Every pair <= 0.83% except the TechStack positions (8-16%, random ball layout per load). Double resize cycle: 7 ScrollTriggers throughout, rim at 220px, identical values per cycle. 10 s idle at top: blink still fires; desk scene (typing + flicker) changes every frame. No console errors.
