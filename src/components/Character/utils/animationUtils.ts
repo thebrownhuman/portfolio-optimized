@@ -32,6 +32,7 @@ const setAnimations = (gltf: GLTF) => {
       typingAction.timeScale = 1.2;
     }
   }
+  // Returns how long (ms) the intro keeps the scene changing
   function startIntro() {
     const introClip = gltf.animations.find(
       (clip) => clip.name === "introAnimation"
@@ -43,6 +44,7 @@ const setAnimations = (gltf: GLTF) => {
       const blink = gltf.animations.find((clip) => clip.name === "Blink");
       mixer.clipAction(blink!).play().fadeIn(0.5);
     }, 2500);
+    return Math.max(introClip!.duration * 1000, 3000);
   }
   function hover(gltf: GLTF, hoverDiv: HTMLDivElement) {
     let eyeBrowUpAction = createBoneAction(

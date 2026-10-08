@@ -12,7 +12,7 @@ import {
 } from "./utils/mouseUtils";
 import setAnimations from "./utils/animationUtils";
 import { setProgress } from "../Loading";
-import { killCharTimeline } from "../utils/GsapScroll";
+import { killCharTimeline, setCharTimelineListener } from "../utils/GsapScroll";
 import onDebouncedResize from "../utils/debouncedResize";
 
 const Scene = () => {
@@ -53,6 +53,16 @@ const Scene = () => {
     let disposed = false;
 
     const clock = new THREE.Clock();
+
+    // Render on demand: full rate while something changes, otherwise only the
+    // looping idle clips (typing, keys, blink, screen flicker) need frames
+    const IDLE_FRAME_MS = 1000 / 30;
+    let activeUntil = 0;
+    let lastRender = -Infinity;
+    const wake = (ms: number) => {
+      activeUntil = Math.max(activeUntil, performance.now() + ms);
+    };
+    setCharTimelineListener(() => wake(300));
 
     // Preload project images — returns a promise that resolves when all are cached
     const preloadImages = () => {
@@ -97,12 +107,14 @@ const Scene = () => {
         setTimeout(() => {
           if (disposed) return;
           light.turnOnLights();
-          animations.startIntro();
+          // Lights tween for 2s (+0.2s delay); the intro clip may run longer
+          wake(Math.max(animations.startIntro(), 2500) + 500);
         }, 2500);
       });
-      removeResize = onDebouncedResize(() =>
-        handleResize(renderer, camera, canvasDiv, character)
-      );
+      removeResize = onDebouncedResize(() => {
+        handleResize(renderer, camera, canvasDiv, character);
+        wake(500);
+      });
     });
 
     let mouse = { x: 0, y: 0 },
@@ -111,18 +123,22 @@ const Scene = () => {
     const onScroll = () => (scrollY = window.scrollY);
     window.addEventListener("scroll", onScroll, { passive: true });
 
+    // Head follow and the eyebrow hover both start from pointer movement
     const onMouseMove = (event: MouseEvent) => {
       handleMouseMove(event, (x, y) => (mouse = { x, y }));
+      wake(1000);
     };
     // Single touchmove handler — added once to landingDiv, not stacked per touch
     const onTouchMove = (e: TouchEvent) => {
       handleTouchMove(e, (x, y) => (mouse = { x, y }));
+      wake(1000);
     };
 
     const onTouchEnd = () => {
       handleTouchEnd((x, y, interpolationX, interpolationY) => {
         mouse = { x, y };
         interpolation = { x: interpolationX, y: interpolationY };
+        wake(1000);
       });
     };
 
@@ -142,8 +158,18 @@ const Scene = () => {
 
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
-      if (!isVisible) return;
+      if (!isVisible) {
+        // Drop off-screen time so the mixer doesn't jump when it comes back
+        clock.getDelta();
+        return;
+      }
+      const now = performance.now();
+      // Throttled frames keep the clock running, so the idle clips stay real-time
+      if (now >= activeUntil && now - lastRender < IDLE_FRAME_MS - 1) return;
+      lastRender = now;
       if (headBone) {
+        const prevX = headBone.rotation.x;
+        const prevY = headBone.rotation.y;
         handleHeadRotation(
           headBone,
           mouse.x,
@@ -153,6 +179,13 @@ const Scene = () => {
           THREE.MathUtils.lerp,
           scrollY
         );
+        // Keep full rate until the head lerp settles
+        if (
+          Math.abs(headBone.rotation.x - prevX) > 1e-4 ||
+          Math.abs(headBone.rotation.y - prevY) > 1e-4
+        ) {
+          wake(100);
+        }
         light.setPointLight(screenLight);
       }
       const delta = clock.getDelta();
@@ -166,6 +199,7 @@ const Scene = () => {
       disposed = true;
       cancelAnimationFrame(animFrameId);
       visibilityObserver.disconnect();
+      setCharTimelineListener(undefined);
       removeResize?.();
       killCharTimeline();
       progress.dispose();

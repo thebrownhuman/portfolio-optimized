@@ -3,6 +3,12 @@ import gsap from "gsap";
 
 let charCtx: gsap.Context | undefined;
 let allCtx: gsap.Context | undefined;
+let onCharTimelineUpdate: (() => void) | undefined;
+
+// The character scene renders on demand; scroll timelines tell it when they moved the camera/model
+export function setCharTimelineListener(listener: (() => void) | undefined) {
+  onCharTimelineUpdate = listener;
+}
 
 // Reverts and rebuilds only these timelines; other ScrollTriggers are untouched
 export function setCharTimeline(
@@ -39,6 +45,7 @@ function buildCharTimeline(
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
+      onUpdate: () => onCharTimelineUpdate?.(),
     },
   });
   const tl2 = gsap.timeline({
@@ -48,7 +55,10 @@ function buildCharTimeline(
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
-      onUpdate: () => syncFlicker(),
+      onUpdate: () => {
+        syncFlicker();
+        onCharTimelineUpdate?.();
+      },
     },
   });
   const tl3 = gsap.timeline({
@@ -58,7 +68,10 @@ function buildCharTimeline(
       end: "bottom top",
       scrub: true,
       invalidateOnRefresh: true,
-      onUpdate: () => syncFlicker(),
+      onUpdate: () => {
+        syncFlicker();
+        onCharTimelineUpdate?.();
+      },
     },
   });
   let screenLight: any, monitor: any;
