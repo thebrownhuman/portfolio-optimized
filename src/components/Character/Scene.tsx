@@ -64,28 +64,21 @@ const Scene = () => {
     };
     setCharTimelineListener(() => wake(300));
 
-    // Preload project images — returns a promise that resolves when all are cached
+    // Warm the cache for the Work carousel images (their slides sit off-screen
+    // sideways, so lazy loading alone would pop them in on "next")
     const preloadImages = () => {
-      const urls = [
+      [
         "/images/Solidx.webp",
         "/images/radix.webp",
         "/images/bond.webp",
         "/images/sapphire.webp",
         "/images/Maxlife.webp",
-      ];
-      return Promise.all(
-        urls.map(
-          (src) =>
-            new Promise<void>((resolve) => {
-              const img = new Image();
-              img.onload = () => resolve();
-              img.onerror = () => resolve(); // don't block on error
-              img.src = src;
-            })
-        )
-      );
+      ].forEach((src) => {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = src;
+      });
     };
-    const imagesReady = preloadImages();
 
     const light = setLighting(scene);
     let progress = setProgress((value) => setLoading(value));
@@ -101,9 +94,10 @@ const Scene = () => {
       scene.add(character);
       headBone = character.getObjectByName("spine006") || null;
       screenLight = character.getObjectByName("screenlight") || null;
-      await imagesReady;
       progress.loaded().then(() => {
         if (disposed) return;
+        // After the model, so the images don't compete with it for bandwidth
+        preloadImages();
         setTimeout(() => {
           if (disposed) return;
           light.turnOnLights();
