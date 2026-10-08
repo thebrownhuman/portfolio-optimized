@@ -107,29 +107,38 @@
   width: 10px;
   height: 10px;
   border-radius: 50px;
-  box-shadow: 0px 0px 5px 2px #67e8f9, 0px 0px 15px 8px #5eead4,
-    0px 0px 110px 20px #a5f3fc;
+  box-shadow: 0px 0px 5px 2px #67e8f9;
+  /* GsapScroll tweens this; the glow inherits it */
+  animation-iteration-count: infinite;
+}
+
+/* Outer glow on its own layer so the pulse animates opacity, not box-shadow */
+.career-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0px 0px 15px 5px #5eead4, 0px 0px 110px 20px #a5f3fc;
   animation: timeline 0.8s linear infinite forwards;
+  animation-iteration-count: inherit;
+  will-change: opacity;
 }
 
 @keyframes timeline {
-
-  10%,
   20%,
   50%,
   70%,
   90% {
-    box-shadow: 0px 0px 5px 2px #67e8f9;
+    opacity: 0;
   }
 
+  0%,
   10%,
   30%,
-  0%,
-  100%,
   64%,
-  80% {
-    box-shadow: 0px 0px 5px 2px #67e8f9, 0px 0px 15px 5px #5eead4,
-      0px 0px 110px 20px #a5f3fc;
+  80%,
+  100% {
+    opacity: 1;
   }
 }
 

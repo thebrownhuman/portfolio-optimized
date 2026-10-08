@@ -13,9 +13,10 @@ const Navbar = () => {
     smoother = ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
-      smooth: 1.7,
-      speed: 1.7,
-      effects: true,
+      smooth: 0.9,
+      speed: 1,
+      effects: false,
+      smoothTouch: false,
       autoResize: true,
       ignoreMobileResize: true,
     });
@@ -38,6 +39,7 @@ const Navbar = () => {
 
     return () => {
       clickHandlers.forEach(({ el, handler }) => el.removeEventListener("click", handler));
+      smoother.kill();
     };
   }, []);
   return (

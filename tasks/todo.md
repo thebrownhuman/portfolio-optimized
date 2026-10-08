@@ -21,8 +21,8 @@ See `tasks/review.md` for the findings. Branch: `perf/optimize`. One commit per 
 - [x] Pause the flicker interval/timeline when off-screen
 
 ## Phase 3: Feel + CSS
-- [ ] ScrollSmoother `smooth` ~0.9, `speed` 1, `effects:false`, kill on cleanup
-- [ ] Cursor: drop `mix-blend-mode` (or test its cost first), career-dot shadow animation → opacity
+- [x] ScrollSmoother `smooth` ~0.9, `speed` 1, `effects:false`, kill on cleanup
+- [x] Cursor: tested `mix-blend-mode` cost (none measurable, kept); career-dot shadow animation → opacity on `::after`
 
 ## Phase 4: Load (P2)
 - [ ] Clone materials before `compileAsync`
@@ -66,3 +66,18 @@ Extra findings fixed:
 
 Resize bug verified: on HEAD, after a resize the character stays at translateX -750px whatever the scroll position. After the fix it animates (-750 -> -1125 -> -930/-500 across scroll positions). No console errors.
 TechStack entry spike (~150-200ms): resuming a viewport early (rootMargin 100%) moves it off-screen but does not remove it. The cost is physics/frameloop first frames.
+
+### Phase 3 (worker1)
+Same method (production builds, interleaved, 4x throttle), Phase 2 build vs Phase 3 build:
+
+| | scroll FPS | scroll p95 | jank frames >50ms | long tasks (count / total) |
+|---|---|---|---|---|
+| Phase 2 | 45-49 | 37-42ms | 12-15 | 10 / 0.70-0.72s |
+| Phase 3 | 48-55 | 33ms | 6-7 | 3-5 / 0.27-0.44s |
+
+- ScrollSmoother: smooth 0.9, speed 1, effects false (no `data-speed`/`data-lag` in markup, so nothing visual is lost), smoothTouch false, `smoother.kill()` on cleanup.
+- Cursor `mix-blend-mode: difference`: blend vs normal while moving the mouse and scrolling gave fps 47-55 vs 47-50 and task time 17.6-18.1s vs 18.1-18.2s. That is noise, so it was kept (measured on an RTX 4060; a weak iGPU may differ).
+- Career dot: static small shadow on the dot, big glow on `::after`, pulse animates opacity. GSAP still tweens `animation-iteration-count` on the dot; `::after` inherits it (verified: computed `1` after the tween).
+- Verified on the Phase 3 build: resize then scroll still animates the character; no console errors.
+
+Cumulative from 96964aa (Phase 1) to Phase 3, scroll under 4x throttle: FPS 40-41 -> 48-55, long tasks 1.1-1.4s -> 0.27-0.44s.
