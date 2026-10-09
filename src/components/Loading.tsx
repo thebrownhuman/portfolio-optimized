@@ -37,18 +37,20 @@ const Loading = ({ percent }: { percent: number }) => {
     return () => anims.forEach((a) => a.cancel());
   }, [clicked]);
 
+  // Fetch the intro chunk while the scene loads, not after 100%
+  useEffect(() => {
+    import("./utils/initialFX");
+  }, []);
+
+  // At 100% swap straight to "Welcome" (there used to be a dead 600ms on 100%),
+  // then start the exit once its slide-in has finished
   useEffect(() => {
     if (percent < 100) return;
-    const t1 = setTimeout(() => {
-      setLoaded(true);
-    }, 600);
-    const t2 = setTimeout(() => {
+    setLoaded(true);
+    const t = setTimeout(() => {
       setIsLoaded(true);
-    }, 1600);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    }, WELCOME_MS);
+    return () => clearTimeout(t);
   }, [percent]);
 
   useEffect(() => {
@@ -130,6 +132,8 @@ const Loading = ({ percent }: { percent: number }) => {
 
 export default Loading;
 
+// .loading-content2 slides in on a 1s transition
+const WELCOME_MS = 1000;
 const EXIT_MS = 800;
 const EXIT_RADIUS = { from: 100, to: 5000 };
 
