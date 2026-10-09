@@ -128,19 +128,10 @@ function buildCharTimeline(
           0
         )
         .to(character.rotation, { y: 0.92, x: 0.12, delay: 3, duration: 3 }, 0)
-        .to(neckBone!.rotation, { x: 0.6, delay: 2, duration: 3 }, 0)
-        .to(monitor!.material, { opacity: 1, duration: 0.8, delay: 3.2 }, 0)
-        .to(screenLight!.material, { opacity: 1, duration: 0.8, delay: 4.5 }, 0)
         .fromTo(
           ".what-box-in",
           { display: "none" },
           { display: "flex", duration: 0.1, delay: 6 },
-          0
-        )
-        .fromTo(
-          monitor!.position,
-          { y: -10, z: 2 },
-          { y: 0, z: 0, delay: 1.5, duration: 3 },
           0
         )
         .fromTo(
@@ -149,6 +140,17 @@ function buildCharTimeline(
           { opacity: 0, scale: 0, y: "-70%", duration: 5, delay: 2 },
           0.3
         );
+
+      // Skip (don't throw) if a re-exported model renames these nodes
+      if (neckBone) tl2.to(neckBone.rotation, { x: 0.6, delay: 2, duration: 3 }, 0);
+      else console.warn('GsapScroll: "spine005" not found, skipping neck tween');
+      if (monitor) {
+        tl2
+          .to(monitor.material, { opacity: 1, duration: 0.8, delay: 3.2 }, 0)
+          .fromTo(monitor.position, { y: -10, z: 2 }, { y: 0, z: 0, delay: 1.5, duration: 3 }, 0);
+      } else console.warn('GsapScroll: monitor mesh not found, skipping monitor tweens');
+      if (screenLight) tl2.to(screenLight.material, { opacity: 1, duration: 0.8, delay: 4.5 }, 0);
+      else console.warn('GsapScroll: "screenlight" not found, skipping screen light tween');
 
       tl3
         .fromTo(

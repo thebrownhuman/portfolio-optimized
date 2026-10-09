@@ -43,8 +43,11 @@ const setCharacter = (
             await renderer.compileAsync(character, camera, scene);
             setCharTimeline(character, camera);
             setAllTimeline();
-            character!.getObjectByName("footR")!.position.y = 3.36;
-            character!.getObjectByName("footL")!.position.y = 3.36;
+            for (const name of ["footR", "footL"]) {
+              const foot = character.getObjectByName(name);
+              if (foot) foot.position.y = 3.36;
+              else console.warn(`Character: "${name}" not found, skipping foot offset`);
+            }
 
             resolve(gltf);
           },
