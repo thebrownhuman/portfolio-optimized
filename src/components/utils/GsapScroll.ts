@@ -160,14 +160,16 @@ function buildCharTimeline(
           { y: "-100%", duration: 4, ease: "none", delay: 1 },
           0
         )
-        // The slide only clears the viewport once Career is already on screen.
-        // Fade while the model's bottom edge rises from 80% to 50% of the viewport:
-        // the What I Do boxes are mostly scrolled off by then, and the Career
-        // heading is still in the lower half (measured at 1920x1080, 1440x900, 1600x700)
+        // The slide only clears the viewport once Career is already on screen, so the
+        // model fades out first, over t 2.4-3.6 of 5 (native scroll). Measured at
+        // 2464x1256, 1920x1080, 1440x900, 1600x700: at the end the What I Do cards are
+        // 12-28% from the top of the screen and the feet are still above the Career
+        // heading. Later (3.1) leaves the half-faded legs hanging over Career on tall
+        // screens; earlier (1.8) faded him with the cards still mid-screen
         .fromTo(
           ".character-model",
           { opacity: 1 },
-          { opacity: 0, duration: 1.2, ease: "none", delay: 1.8 },
+          { opacity: 0, duration: 1.2, ease: "none", delay: 2.4 },
           0
         )
         .fromTo(".whatIDO", { y: 0 }, { y: "15%", duration: 2 }, 0)
