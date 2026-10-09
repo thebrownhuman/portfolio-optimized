@@ -20,8 +20,8 @@ const setCharacter = (
           async (gltf) => {
             character = gltf.scene;
             // Swap materials before compiling so the compiled programs are the ones rendered
-            character.traverse((child: any) => {
-              if (child.isMesh) {
+            character.traverse((child) => {
+              if ((child as THREE.Mesh).isMesh) {
                 const mesh = child as THREE.Mesh;
 
                 // Change clothing colors to match site theme

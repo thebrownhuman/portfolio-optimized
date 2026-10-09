@@ -5,6 +5,8 @@ let charCtx: gsap.Context | undefined;
 let allCtx: gsap.Context | undefined;
 let onCharTimelineUpdate: (() => void) | undefined;
 
+export type StandardMesh = THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+
 // The character scene renders on demand; scroll timelines tell it when they moved the camera/model
 export function setCharTimelineListener(listener: (() => void) | undefined) {
   onCharTimelineUpdate = listener;
@@ -74,10 +76,11 @@ function buildCharTimeline(
       },
     },
   });
-  let screenLight: any, monitor: any;
-  character?.children.forEach((object: any) => {
-    if (object.name === "Plane004") {
-      object.children.forEach((child: any) => {
+  let screenLight: StandardMesh | undefined, monitor: StandardMesh | undefined;
+  character?.children.forEach((obj) => {
+    if (obj.name === "Plane004") {
+      obj.children.forEach((c) => {
+        const child = c as StandardMesh;
         child.material.transparent = true;
         child.material.opacity = 0;
         if (child.material.name === "Material.018") {
@@ -86,7 +89,8 @@ function buildCharTimeline(
         }
       });
     }
-    if (object.name === "screenlight") {
+    if (obj.name === "screenlight") {
+      const object = obj as StandardMesh;
       object.material.transparent = true;
       object.material.opacity = 0;
       object.material.emissive.set("#B0F5EA");
@@ -125,8 +129,8 @@ function buildCharTimeline(
         )
         .to(character.rotation, { y: 0.92, x: 0.12, delay: 3, duration: 3 }, 0)
         .to(neckBone!.rotation, { x: 0.6, delay: 2, duration: 3 }, 0)
-        .to(monitor.material, { opacity: 1, duration: 0.8, delay: 3.2 }, 0)
-        .to(screenLight.material, { opacity: 1, duration: 0.8, delay: 4.5 }, 0)
+        .to(monitor!.material, { opacity: 1, duration: 0.8, delay: 3.2 }, 0)
+        .to(screenLight!.material, { opacity: 1, duration: 0.8, delay: 4.5 }, 0)
         .fromTo(
           ".what-box-in",
           { display: "none" },
@@ -134,7 +138,7 @@ function buildCharTimeline(
           0
         )
         .fromTo(
-          monitor.position,
+          monitor!.position,
           { y: -10, z: 2 },
           { y: 0, z: 0, delay: 1.5, duration: 3 },
           0

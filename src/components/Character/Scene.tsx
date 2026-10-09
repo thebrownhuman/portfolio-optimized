@@ -12,7 +12,7 @@ import {
 } from "./utils/mouseUtils";
 import setAnimations from "./utils/animationUtils";
 import { setProgress } from "../Loading";
-import { killCharTimeline, setCharTimelineListener } from "../utils/GsapScroll";
+import { killCharTimeline, setCharTimelineListener, type StandardMesh } from "../utils/GsapScroll";
 import onDebouncedResize from "../utils/debouncedResize";
 
 const Scene = () => {
@@ -47,7 +47,7 @@ const Scene = () => {
     camera.updateProjectionMatrix();
 
     let headBone: THREE.Object3D | null = null;
-    let screenLight: any | null = null;
+    let screenLight: StandardMesh | null = null;
     let mixer: THREE.AnimationMixer;
     let animFrameId: number;
     let disposed = false;
@@ -93,7 +93,7 @@ const Scene = () => {
       const character = gltf.scene;
       scene.add(character);
       headBone = character.getObjectByName("spine006") || null;
-      screenLight = character.getObjectByName("screenlight") || null;
+      screenLight = (character.getObjectByName("screenlight") as StandardMesh | undefined) ?? null;
       progress.loaded().then(() => {
         if (disposed) return;
         // After the model, so the images don't compete with it for bandwidth
@@ -180,7 +180,7 @@ const Scene = () => {
         ) {
           wake(100);
         }
-        light.setPointLight(screenLight);
+        if (screenLight) light.setPointLight(screenLight);
       }
       const delta = clock.getDelta();
       if (mixer) {

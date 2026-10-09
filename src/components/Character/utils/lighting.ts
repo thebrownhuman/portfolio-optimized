@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { loadEnvMap } from "../../utils/envMap";
 import { gsap } from "gsap";
+import type { StandardMesh } from "../../utils/GsapScroll";
 
 const setLighting = (scene: THREE.Scene) => {
   const directionalLight = new THREE.DirectionalLight(0x5eead4, 0);
@@ -18,7 +19,7 @@ const setLighting = (scene: THREE.Scene) => {
     scene.environmentRotation.set(5.76, 85.85, 1);
   });
 
-  function setPointLight(screenLight: any) {
+  function setPointLight(screenLight: StandardMesh) {
     if (screenLight.material.opacity > 0.9) {
       pointLight.intensity = screenLight.material.emissiveIntensity * 20;
     } else {
