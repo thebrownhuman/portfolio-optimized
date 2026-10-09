@@ -34,6 +34,18 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
   <link rel="icon" type="image/webp" href="/images/preview.webp" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <style>
+    .seo-fallback {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  </style>
+
   <!-- Structured data -->
   <script type="application/ld+json">
 {
@@ -97,7 +109,58 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Static fallback for crawlers that don't run JS. React's createRoot
+         replaces everything in #root on first render. Visually hidden so it
+         never flashes before the app mounts. -->
+    <main class="seo-fallback">
+      <h1>Shivansh Mishra</h1>
+      <p>Software Engineer at GE HealthCare</p>
+      <section>
+        <h2>About Me</h2>
+        <p>Software Engineer at GE HealthCare with a passion for building tools that automate and streamline complex processes. Skilled in Python, JavaScript, Java, and React, with experience spanning network automation, RPA development, and full-stack web applications. Certified in AWS, with a knack for UI design and a continuous drive to explore new technologies.</p>
+      </section>
+      <section>
+        <h2>What I Do</h2>
+        <h3>Frontend: Building Interactive UIs</h3>
+        <p>Crafting performant, responsive interfaces with modern frameworks. From SPAs to full-stack web apps, I deliver polished user experiences.</p>
+        <p>React, JavaScript, TypeScript, HTML5, CSS3, Tkinter</p>
+        <h3>Backend &amp; Automation: Scalable Solutions &amp; Tooling</h3>
+        <p>Building automation tools, APIs, and backend systems. From network health checks to RPA agents, I build software that streamlines operations.</p>
+        <p>Python, Java, C++, SQL, Node.js, Express, Selenium, AWS</p>
+      </section>
+      <section>
+        <h2>Career &amp; Experience</h2>
+        <h3>Software Engineer, GE HealthCare (now)</h3>
+        <p>Building and maintaining automation tools and software solutions for healthcare infrastructure. Working in a hybrid environment on network reliability and operational efficiency.</p>
+        <h3>Software Engineer Intern, GE HealthCare (2022)</h3>
+        <p>Developed a Python-based Network Health Check tool, automating collection of network configuration backups, equipment status, and health information. Implemented FMEA to improve reliability.</p>
+        <h3>ARPA Intern, HighRadius (2022)</h3>
+        <p>Implemented Java-based automation agents for portal logins, receipt downloading, and business process optimization. Built a B2B Invoice Management Web App using React and Express.</p>
+      </section>
+      <section>
+        <h2>My Work</h2>
+        <ul>
+          <li>Solid Starters: Low-Code Platform (Angular, Next.js, NestJS, MongoDB)</li>
+          <li>Radix: E-Commerce (Angular, Next.js, NestJS, CMS)</li>
+          <li>Bond Cancellation: Import-Export Automation (Angular, Next.js, NestJS, Workflows)</li>
+          <li>Sapphire: CRM Platform (AngularJS, NestJS, PostgreSQL)</li>
+          <li>Mpro: Insurance Platform (React.js, Node.js, Microservices)</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Contact</h2>
+        <p>Email: <a href="mailto:thebrownhuman@gmail.com">thebrownhuman@gmail.com</a></p>
+        <p>Education: BTech in Computer Science, KIIT</p>
+        <ul>
+          <li><a href="https://github.com/thebrownhuman">GitHub</a></li>
+          <li><a href="https://www.linkedin.com/in/thebrownhuman/">LinkedIn</a></li>
+          <li><a href="https://www.instagram.com/thebrownhuman/">Instagram</a></li>
+          <li><a href="https://x.com/thebrownhuman">X (Twitter)</a></li>
+        </ul>
+      </section>
+    </main>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
