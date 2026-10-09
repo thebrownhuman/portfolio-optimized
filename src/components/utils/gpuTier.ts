@@ -25,21 +25,25 @@ function rendererName(): string {
 const param = new URLSearchParams(window.location.search).get("quality");
 const forced = param === "high" || param === "low" ? param : null;
 
-function detect(): GpuTier {
-  if (forced) return forced;
-  const name = rendererName();
-  if (name) return LOW_GPU.test(name) ? "low" : "high";
+// Why the current tier was picked; shown by the ?debug badge
+export type GpuTierReason = "override" | "renderer" | "fallback" | "watchdog";
+export const gpuRenderer = rendererName();
+
+function detect(): [GpuTier, GpuTierReason] {
+  if (forced) return [forced, "override"];
+  if (gpuRenderer) return [LOW_GPU.test(gpuRenderer) ? "low" : "high", "renderer"];
   // GPU unknown: fall back to the device's size hints
   const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-  return navigator.hardwareConcurrency <= 4 || (memory !== undefined && memory <= 4)
-    ? "low"
-    : "high";
+  const small =
+    navigator.hardwareConcurrency <= 4 || (memory !== undefined && memory <= 4);
+  return [small ? "low" : "high", "fallback"];
 }
 
-let tier: GpuTier = detect();
+let [tier, reason] = detect();
 const listeners = new Set<() => void>();
 
 export const getGpuTier = () => tier;
+export const getGpuTierReason = () => reason;
 
 export function onGpuTierChange(listener: () => void) {
   listeners.add(listener);
@@ -48,10 +52,18 @@ export function onGpuTierChange(listener: () => void) {
 
 export const useGpuTier = () => useSyncExternalStore(onGpuTierChange, getGpuTier);
 
-// Watchdog: while a 3D scene is drawing, if the median frame over a ~2s
-// window is slower than 25ms (< 40fps), drop to low for the rest of the visit
+// Watchdog: judges frames only while a 3D scene is drawing, against the
+// device's own frame cadence, so a browser capped at 30fps (low power mode,
+// battery saver, 30Hz screens) is not mistaken for a slow GPU. It demotes
+// high -> low once, on dropped frames, and never promotes back.
 const WINDOW_MS = 2000;
-const SLOW_FRAME_MS = 25;
+// Demote when fewer than this share of the cadence's frames are delivered
+const MIN_DELIVERED = 0.6;
+// ...and the median frame is slower than 45fps: a variable-refresh screen
+// steadily running a heavy scene at, say, 75 of 144Hz is fine as it is
+const SLOW_MEDIAN_MS = 1000 / 45;
+// Under 20fps even on the fastest frames: no frame cap goes this low
+const HOPELESS_FRAME_MS = 50;
 // A gap this long is a hidden/occluded tab or a one-off stall, not a slow GPU
 const MAX_GAP_MS = 250;
 
@@ -60,11 +72,27 @@ let frames: number[] = [];
 let windowStart = 0;
 let last = 0;
 let rafId: number | undefined;
+// Steady frame interval: the fastest window's 10th-percentile frame, kept
+// across windows so light scenes (the idle character) set it before a heavy one
+let cadence = Infinity;
 
 function demote() {
   tier = "low";
+  reason = "watchdog";
   stopWatch();
   listeners.forEach((listener) => listener());
+}
+
+function judgeWindow(elapsed: number) {
+  if (frames.length < 10) return;
+  const sorted = frames.sort((a, b) => a - b);
+  const fast = sorted[Math.floor(sorted.length / 10)];
+  cadence = Math.min(cadence, fast);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  const delivered = frames.length / (elapsed / cadence);
+  if ((delivered < MIN_DELIVERED && median > SLOW_MEDIAN_MS) || fast > HOPELESS_FRAME_MS) {
+    demote();
+  }
 }
 
 function tick(now: number) {
@@ -78,8 +106,7 @@ function tick(now: number) {
   }
   frames.push(gap);
   if (now - windowStart < WINDOW_MS) return;
-  const sorted = frames.sort((a, b) => a - b);
-  if (sorted[Math.floor(sorted.length / 2)] > SLOW_FRAME_MS) demote();
+  judgeWindow(now - windowStart);
   frames = [];
   windowStart = now;
 }
@@ -104,4 +131,4 @@ export function setSceneBusy(scene: string, isBusy: boolean) {
 }
 
 // Exposed for the perf benchmarks
-(window as Window & { __gpuTier?: () => GpuTier }).__gpuTier = getGpuTier;
+(window as Window & { __gpuTier?: () => string }).__gpuTier = () => `${tier}:${reason}`;

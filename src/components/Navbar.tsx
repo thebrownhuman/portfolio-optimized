@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import GpuBadge from "./GpuBadge";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import HoverLinks from "./HoverLinks";
 import { gsap } from "gsap";
@@ -68,6 +69,7 @@ const Navbar = () => {
   return (
     <>
       {showScrollBadge && <div className="scroll-mode-badge">scroll: {scrollMode}</div>}
+      <GpuBadge />
       <div className="header">
         <a href="/#" className="navbar-title" data-cursor="disable">
           SM

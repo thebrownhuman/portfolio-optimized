@@ -83,6 +83,10 @@
 }
 
 /* Dev-only: shown when the ?scroll= test param is present */
+.scroll-mode-badge.gpu-badge {
+  bottom: 40px;
+  max-width: calc(100vw - 24px);
+}
 .scroll-mode-badge {
   position: fixed;
   left: 12px;
