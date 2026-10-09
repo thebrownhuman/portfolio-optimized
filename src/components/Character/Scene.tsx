@@ -119,6 +119,10 @@ const Scene = () => {
         handleResize(renderer, camera, canvasDiv, character);
         wake(500);
       });
+    }).catch((error) => {
+      // Without this the loader waits at ~92% forever; open the site without the character
+      console.error("Character failed to load", error);
+      if (!disposed) progress.loaded();
     });
 
     let mouse = { x: 0, y: 0 },

@@ -228,6 +228,7 @@ const TechStack = () => {
 // so <Preload> still compiles the balls with the env map)
 function SharedEnvironment() {
   const map = suspend(loadEnvMap, ["char-env"]);
+  if (!map) return null;
   return <Environment map={map} environmentIntensity={0.5} environmentRotation={[0, 4, 2]} />;
 }
 

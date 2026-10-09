@@ -14,6 +14,7 @@ const setLighting = (scene: THREE.Scene) => {
   scene.add(pointLight);
 
   loadEnvMap().then((texture) => {
+    if (!texture) return;
     scene.environment = texture;
     scene.environmentIntensity = 0;
     scene.environmentRotation.set(5.76, 85.85, 1);

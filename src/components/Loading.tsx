@@ -54,17 +54,24 @@ const Loading = ({ percent }: { percent: number }) => {
   }, [percent]);
 
   useEffect(() => {
-    import("./utils/initialFX").then((module) => {
-      if (isLoaded) {
-        setClicked(true);
-        setTimeout(() => {
-          if (module.initialFX) {
-            module.initialFX();
-          }
-          setIsLoading(false);
-        }, 900);
-      }
+    if (!isLoaded) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // A failed chunk fetch (flaky network, or a stale tab after a deploy) used to
+    // leave the loader stuck at 100%; open the page without the intro FX instead
+    loadInitialFX().then((initialFX) => {
+      if (cancelled) return;
+      setClicked(true);
+      timer = setTimeout(() => {
+        if (initialFX) initialFX();
+        else revealWithoutFX();
+        setIsLoading(false);
+      }, 900);
     });
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [isLoaded, setIsLoading]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
@@ -132,6 +139,24 @@ const Loading = ({ percent }: { percent: number }) => {
 
 export default Loading;
 
+// No retry: Chrome caches a failed dynamic import, so a second import() of the
+// same chunk fails without refetching
+async function loadInitialFX() {
+  try {
+    return (await import("./utils/initialFX")).initialFX;
+  } catch (error) {
+    console.warn("initialFX failed to load; opening the page without it", error);
+    return undefined;
+  }
+}
+
+// The parts of initialFX the page needs to be usable, without its text animations
+function revealWithoutFX() {
+  document.body.style.overflowY = "auto";
+  document.body.style.backgroundColor = "#0a0e17";
+  document.getElementsByTagName("main")[0]?.classList.add("main-active");
+}
+
 // .loading-content2 slides in on a 1s transition
 const WELCOME_MS = 1000;
 const EXIT_MS = 800;
@@ -194,10 +219,19 @@ function exitFrames(wrap: HTMLElement, hover: HTMLElement, expander: HTMLElement
   return { clip, glowStart, glowMove };
 }
 
+// Safety net: if the scene never reports loaded (a hung or failed request we
+// didn't catch), finish the loader anyway rather than leave the visitor stuck
+const LOAD_DEADLINE_MS = 30000;
+
 export const setProgress = (setLoading: (value: number) => void) => {
   let percent: number = 0;
   let disposed = false;
   let rafId: number | undefined;
+  let loadedPromise: Promise<number> | undefined;
+  const deadline = setTimeout(() => {
+    console.warn(`Loading not finished after ${LOAD_DEADLINE_MS / 1000}s; showing the site anyway`);
+    loaded();
+  }, LOAD_DEADLINE_MS);
 
   let interval = setInterval(() => {
     if (disposed) { clearInterval(interval); return; }
@@ -225,15 +259,18 @@ export const setProgress = (setLoading: (value: number) => void) => {
 
   function dispose() {
     disposed = true;
+    clearTimeout(deadline);
     clearInterval(interval);
     if (rafId !== undefined) cancelAnimationFrame(rafId);
   }
 
   // Count up to 100 at the old pace (a 2ms interval runs at ~4ms once the
   // browser clamps it), but set React state at most once per frame
+  // Idempotent: the deadline and the scene may both call it
   function loaded() {
-    return new Promise<number>((resolve) => {
+    loadedPromise ??= new Promise<number>((resolve) => {
       if (disposed) return;
+      clearTimeout(deadline);
       clearInterval(interval);
       let last = performance.now();
       const step = (now: number) => {
@@ -251,6 +288,7 @@ export const setProgress = (setLoading: (value: number) => void) => {
       };
       rafId = requestAnimationFrame(step);
     });
+    return loadedPromise;
   }
   return { loaded, percent, clear, dispose };
 };
