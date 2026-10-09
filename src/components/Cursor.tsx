@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import "./styles/Cursor.css";
 import gsap from "gsap";
+import { prefersReducedMotion } from "./utils/reducedMotion";
 
 const Cursor = () => {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -15,7 +16,8 @@ const Cursor = () => {
     const loop = () => {
       rafId = undefined;
       if (hover) return;
-      const delay = 6;
+      // Reduced motion: jump straight to the pointer instead of easing after it
+      const delay = prefersReducedMotion ? 1 : 6;
       const dx = mousePos.x - cursorPos.x;
       const dy = mousePos.y - cursorPos.y;
       if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {

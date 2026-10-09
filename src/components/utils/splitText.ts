@@ -2,6 +2,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { SplitText } from "gsap/SplitText";
+import { prefersReducedMotion } from "./reducedMotion";
 
 interface ParaElement extends HTMLElement {
   anim?: gsap.core.Animation;
@@ -12,7 +13,8 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother, SplitText);
 
 export default function setSplitText() {
   ScrollTrigger.config({ ignoreMobileResize: true });
-  if (window.innerWidth < 900) return;
+  // Reduced motion: leave titles and paragraphs as plain, already-visible text
+  if (window.innerWidth < 900 || prefersReducedMotion) return;
   const paras: NodeListOf<ParaElement> = document.querySelectorAll(".para");
   const titles: NodeListOf<ParaElement> = document.querySelectorAll(".title");
 

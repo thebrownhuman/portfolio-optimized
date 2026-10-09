@@ -3,6 +3,7 @@ import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
 
 import Marquee from "react-fast-marquee";
+import { prefersReducedMotion } from "./utils/reducedMotion";
 
 const Loading = ({ percent }: { percent: number }) => {
   const { setIsLoading } = useLoading();
@@ -92,7 +93,7 @@ const Loading = ({ percent }: { percent: number }) => {
       </div>
       <div className="loading-screen">
         <div className="loading-marquee">
-          <Marquee>
+          <Marquee play={!prefersReducedMotion}>
             <span> Software Engineer</span> <span>Problem Solver</span>
             <span> Software Engineer</span> <span>Problem Solver</span>
           </Marquee>

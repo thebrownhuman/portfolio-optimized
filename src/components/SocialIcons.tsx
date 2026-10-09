@@ -8,9 +8,12 @@ import "./styles/SocialIcons.css";
 import { TbNotes } from "react-icons/tb";
 import { useEffect } from "react";
 import HoverLinks from "./HoverLinks";
+import { prefersReducedMotion } from "./utils/reducedMotion";
 
 const SocialIcons = () => {
   useEffect(() => {
+    // The icons drift toward the pointer; skip that entirely for reduced motion
+    if (prefersReducedMotion) return;
     const social = document.getElementById("social") as HTMLElement;
 
     // Icon state for a single shared RAF loop; rects are cached (the bar is position: fixed, so only resize moves it)

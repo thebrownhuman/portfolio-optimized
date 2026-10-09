@@ -156,3 +156,15 @@ body {
     font-size: 40px;
   }
 }
+/* Reduced motion: stop the decorative loops (landing glows, loader, career dot pulse) */
+@media (prefers-reduced-motion: reduce) {
+  .landing-circle1,
+  .landing-circle2,
+  .loading-box,
+  .loaderGame-in,
+  .loaderGame-ball,
+  .career-dot,
+  .career-dot::after {
+    animation: none !important;
+  }
+}

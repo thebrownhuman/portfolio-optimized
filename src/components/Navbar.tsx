@@ -10,6 +10,7 @@ import {
   smootherSettings,
   usesSmoother,
 } from "./utils/scrollMode";
+import { prefersReducedMotion } from "./utils/reducedMotion";
 
 gsap.registerPlugin(ScrollSmoother, ScrollTrigger);
 // undefined in the native scroll modes (?scroll=native|hybrid)
@@ -22,7 +23,7 @@ export function setScrollPaused(paused: boolean) {
 
 function scrollToSection(section: string) {
   if (smoother) smoother.scrollTo(section, true, "top top");
-  else document.querySelector(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  else document.querySelector(section)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
 }
 
 const Navbar = () => {

@@ -1,6 +1,10 @@
 import { SplitText } from "gsap/SplitText";
 import gsap from "gsap";
 import { setScrollPaused } from "../Navbar";
+import { prefersReducedMotion } from "./reducedMotion";
+
+// Reduced motion: the intro tweens jump to their end state
+const t = (seconds: number) => (prefersReducedMotion ? 0 : seconds);
 
 export function initialFX() {
   document.body.style.overflowY = "auto";
@@ -8,8 +12,8 @@ export function initialFX() {
   document.getElementsByTagName("main")[0].classList.add("main-active");
   gsap.to("body", {
     backgroundColor: "#0a0e17",
-    duration: 0.5,
-    delay: 1,
+    duration: t(0.5),
+    delay: t(1),
   });
 
   var landingText = new SplitText(
@@ -24,12 +28,12 @@ export function initialFX() {
     { opacity: 0, y: 80, filter: "blur(5px)" },
     {
       opacity: 1,
-      duration: 1.2,
+      duration: t(1.2),
       filter: "blur(0px)",
       ease: "power3.inOut",
       y: 0,
-      stagger: 0.025,
-      delay: 0.3,
+      stagger: t(0.025),
+      delay: t(0.3),
     }
   );
 
@@ -41,12 +45,12 @@ export function initialFX() {
     { opacity: 0, y: 80, filter: "blur(5px)" },
     {
       opacity: 1,
-      duration: 1.2,
+      duration: t(1.2),
       filter: "blur(0px)",
       ease: "power3.inOut",
       y: 0,
-      stagger: 0.025,
-      delay: 0.3,
+      stagger: t(0.025),
+      delay: t(0.3),
     }
   );
 
@@ -55,10 +59,10 @@ export function initialFX() {
     { opacity: 0, y: 30 },
     {
       opacity: 1,
-      duration: 1.2,
+      duration: t(1.2),
       ease: "power1.inOut",
       y: 0,
-      delay: 0.8,
+      delay: t(0.8),
     }
   );
   gsap.fromTo(
@@ -66,9 +70,9 @@ export function initialFX() {
     { opacity: 0 },
     {
       opacity: 1,
-      duration: 1.2,
+      duration: t(1.2),
       ease: "power1.inOut",
-      delay: 0.1,
+      delay: t(0.1),
     }
   );
 
@@ -83,7 +87,10 @@ export function initialFX() {
 
   // The loops repeat forever; only run them while the landing section is on screen
   const landing = document.querySelector(".landing-section");
-  if (landing) {
+  if (prefersReducedMotion) {
+    // Hold the first word of each pair; the swap loop never runs
+    loops.forEach((tl) => tl.pause(0));
+  } else if (landing) {
     new IntersectionObserver(([entry]) => {
       loops.forEach((tl) => tl.paused(!entry.isIntersecting));
     }).observe(landing);
