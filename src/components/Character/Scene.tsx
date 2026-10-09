@@ -152,7 +152,9 @@ const Scene = () => {
 
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
-      if (!isVisible) {
+      // The scroll timeline fades the model to opacity 0 over Career while it is
+      // still in the viewport, so the observer alone keeps it drawing
+      if (!isVisible || currentDiv.style.opacity === "0") {
         // Drop off-screen time so the mixer doesn't jump when it comes back
         clock.getDelta();
         return;
