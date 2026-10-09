@@ -26,7 +26,16 @@ const Scene = () => {
   const canvasDiv = useRef<HTMLDivElement | null>(null);
   const hoverDivRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef(new THREE.Scene());
-  const { setLoading } = useLoading();
+  const { setLoading, isLoading } = useLoading();
+  // The intro (rise from below) starts as the page is revealed. It used to start,
+  // with the lights, on a fixed 2.5s timer after 100%, which matched the old
+  // loader's exit but left a dark, unlit character on screen once it got faster
+  const introRef = useRef<{ revealed: boolean; start?: () => void }>({ revealed: false });
+  useEffect(() => {
+    if (isLoading) return;
+    introRef.current.revealed = true;
+    introRef.current.start?.();
+  }, [isLoading]);
 
   useEffect(() => {
     const currentDiv = canvasDiv.current;
@@ -116,12 +125,18 @@ const Scene = () => {
         if (disposed) return;
         // After the model, so the images don't compete with it for bandwidth
         preloadImages();
-        setTimeout(() => {
+        // Light him up behind the loader (held on the intro's first frame), so the
+        // page opens on a lit, already-drawn character; this also moves the first
+        // render's GPU uploads off the first visible frame
+        light.turnOnLights();
+        // Lights tween for 2s (+0.2s delay)
+        wake(2700);
+        introRef.current.start = () => {
+          introRef.current.start = undefined;
           if (disposed) return;
-          light.turnOnLights();
-          // Lights tween for 2s (+0.2s delay); the intro clip may run longer
-          wake(Math.max(animations.startIntro(), 2500) + 500);
-        }, 2500);
+          wake(animations.startIntro() + 500);
+        };
+        if (introRef.current.revealed) introRef.current.start();
       });
       removeResize = onDebouncedResize(() => {
         handleResize(renderer, camera, canvasDiv, character);

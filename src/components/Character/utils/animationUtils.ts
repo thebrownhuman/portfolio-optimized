@@ -13,7 +13,9 @@ const setAnimations = (gltf: GLTF) => {
       const introAction = mixer.clipAction(introClip);
       introAction.setLoop(THREE.LoopOnce, 1);
       introAction.clampWhenFinished = true;
+      // Hold the first frame (the pose below the frame) until startIntro()
       introAction.play();
+      introAction.paused = true;
     } else {
       console.warn('Animation "introAnimation" not found, skipping intro');
     }
