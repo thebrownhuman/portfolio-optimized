@@ -127,11 +127,19 @@ function Pointer({ vec = new THREE.Vector3(), isActive }: PointerProps) {
   );
 }
 
+// A priority > 0 useFrame takes over rendering from R3F; doing nothing in it
+// keeps physics stepping while skipping the draw
+function SkipRender() {
+  useFrame(() => {}, 1);
+  return null;
+}
+
 const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
 const TechStack = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
+  const [onScreen, setOnScreen] = useState(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -140,11 +148,20 @@ const TechStack = () => {
       ([entry]) => {
         setIsActive(entry.isIntersecting);
       },
-      // Resume a viewport early so the first-frame cost lands before the section is visible
+      // Resume a viewport early so the balls have gathered before the section is visible
       { rootMargin: "100% 0px" },
     );
+    // Drawing (and N8AO) only while actually on screen: in the early zone the
+    // canvas is off-screen, and rendering it there made Career scroll drop frames
+    const screenObserver = new IntersectionObserver(([entry]) => {
+      setOnScreen(entry.isIntersecting);
+    });
     observer.observe(el);
-    return () => observer.disconnect();
+    screenObserver.observe(el);
+    return () => {
+      observer.disconnect();
+      screenObserver.disconnect();
+    };
   }, []);
   const materials = useMemo(() => {
     return textures.map(
@@ -196,8 +213,9 @@ const TechStack = () => {
         </Physics>
         <SharedEnvironment />
         <Preload all />
+        {isActive && !onScreen && <SkipRender />}
         {!isMobile && (
-          <EffectComposer enableNormalPass={false}>
+          <EffectComposer enableNormalPass={false} enabled={onScreen}>
             <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
           </EffectComposer>
         )}
