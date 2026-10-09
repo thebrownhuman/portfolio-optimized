@@ -25,8 +25,8 @@ const Scene = () => {
     const currentDiv = canvasDiv.current;
     if (!currentDiv) return;
 
-    let rect = currentDiv.getBoundingClientRect();
-    let container = { width: rect.width, height: rect.height };
+    const rect = currentDiv.getBoundingClientRect();
+    const container = { width: rect.width, height: rect.height };
     const aspect = container.width / container.height;
     const scene = sceneRef.current;
 
@@ -81,14 +81,14 @@ const Scene = () => {
     };
 
     const light = setLighting(scene);
-    let progress = setProgress((value) => setLoading(value));
+    const progress = setProgress((value) => setLoading(value));
     const { loadCharacter } = setCharacter(renderer, scene, camera);
     let removeResize: (() => void) | undefined;
 
     loadCharacter().then(async (gltf) => {
       if (disposed || !gltf) return;
       const animations = setAnimations(gltf);
-      hoverDivRef.current && animations.hover(gltf, hoverDivRef.current);
+      if (hoverDivRef.current) animations.hover(gltf, hoverDivRef.current);
       mixer = animations.mixer;
       const character = gltf.scene;
       scene.add(character);

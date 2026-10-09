@@ -12,7 +12,7 @@ const setCharacter = (
   loader.setMeshoptDecoder(MeshoptDecoder());
 
   const loadCharacter = () => {
-    return new Promise<GLTF | null>(async (resolve, reject) => {
+    return new Promise<GLTF | null>((resolve, reject) => {
       try {
         let character: THREE.Object3D;
         loader.load(
