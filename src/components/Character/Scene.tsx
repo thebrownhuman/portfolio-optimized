@@ -20,6 +20,7 @@ import {
   type StandardMesh,
 } from "../utils/GsapScroll";
 import onDebouncedResize from "../utils/debouncedResize";
+import { getGpuTier, onGpuTierChange, setSceneBusy } from "../utils/gpuTier";
 
 const Scene = () => {
   const canvasDiv = useRef<HTMLDivElement | null>(null);
@@ -36,12 +37,19 @@ const Scene = () => {
     const aspect = container.width / container.height;
     const scene = sceneRef.current;
 
+    // Low tier: no MSAA and 1x resolution (antialias can't change later, so a
+    // watchdog demotion only drops the pixel ratio)
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
+      antialias: getGpuTier() === "high",
     });
     renderer.setSize(container.width, container.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    const maxPixelRatio = () => (getGpuTier() === "high" ? 1.5 : 1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));
+    const removeTierListener = onGpuTierChange(() => {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));
+      wake(100);
+    });
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
     currentDiv.appendChild(renderer.domElement);
@@ -164,11 +172,14 @@ const Scene = () => {
     });
     visibilityObserver.observe(currentDiv);
 
+    let busy = false;
     const animate = () => {
       animFrameId = requestAnimationFrame(animate);
       // The scroll timeline fades the model to opacity 0 over Career while it is
       // still in the viewport, so the observer alone keeps it drawing
-      if (!isVisible || currentDiv.style.opacity === "0") {
+      const drawing = isVisible && currentDiv.style.opacity !== "0";
+      if (drawing !== busy) setSceneBusy("character", (busy = drawing));
+      if (!drawing) {
         // Drop off-screen time so the mixer doesn't jump when it comes back
         clock.getDelta();
         return;
@@ -208,6 +219,8 @@ const Scene = () => {
     return () => {
       disposed = true;
       cancelAnimationFrame(animFrameId);
+      removeTierListener();
+      setSceneBusy("character", false);
       visibilityObserver.disconnect();
       setCharTimelineListener(undefined);
       removeResize?.();

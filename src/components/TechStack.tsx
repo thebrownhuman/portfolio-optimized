@@ -5,6 +5,7 @@ import { Environment, Preload } from "@react-three/drei";
 import { suspend } from "suspend-react";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import { loadEnvMap } from "./utils/envMap";
+import { setSceneBusy, useGpuTier } from "./utils/gpuTier";
 import {
   BallCollider,
   Physics,
@@ -26,7 +27,11 @@ const imageUrls = [
 ];
 const textures = imageUrls.map((url) => textureLoader.load(url));
 
-const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
+// Low tier: coarser spheres (the balls are small on screen and textured)
+const sphereGeometries = {
+  high: new THREE.SphereGeometry(1, 20, 20),
+  low: new THREE.SphereGeometry(1, 12, 12),
+};
 
 const spheres = [...Array(30)].map(() => ({
   scale: [0.7, 1, 0.8, 1, 1][Math.floor(Math.random() * 5)],
@@ -38,6 +43,7 @@ type SphereProps = {
   scale: number;
   r?: typeof THREE.MathUtils.randFloatSpread;
   material: THREE.MeshStandardMaterial;
+  geometry: THREE.SphereGeometry;
   isActive: boolean;
 };
 
@@ -46,6 +52,7 @@ function SphereGeo({
   scale,
   r = THREE.MathUtils.randFloatSpread,
   material,
+  geometry,
   isActive,
 }: SphereProps) {
   const api = useRef<RapierRigidBody | null>(null);
@@ -85,7 +92,7 @@ function SphereGeo({
       />
       <mesh
         scale={scale}
-        geometry={sphereGeometry}
+        geometry={geometry}
         material={material}
         rotation={[0.3, 1, 1]}
       />
@@ -140,6 +147,13 @@ const TechStack = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
   const [onScreen, setOnScreen] = useState(false);
+  const tier = useGpuTier();
+
+  // Frames only count toward the weak-GPU watchdog while the balls are drawn
+  useEffect(() => {
+    setSceneBusy("techstack", isActive && onScreen);
+    return () => setSceneBusy("techstack", false);
+  }, [isActive, onScreen]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -185,7 +199,7 @@ const TechStack = () => {
           "demand" renders once to compile, then idles while off-screen */}
       <Canvas
         frameloop={isActive ? "always" : "demand"}
-        dpr={[1, 1.5]}
+        dpr={tier === "low" ? 1 : [1, 1.5]}
         gl={{ alpha: true, stencil: false, depth: false, antialias: false }}
         camera={{ position: [0, 0, 20], fov: 32.5, near: 1, far: 100 }}
         onCreated={(state) => (state.gl.toneMappingExposure = 1.5)}
@@ -207,6 +221,7 @@ const TechStack = () => {
               key={i}
               {...props}
               material={materials[props.materialIndex]}
+              geometry={sphereGeometries[tier]}
               isActive={isActive}
             />
           ))}
@@ -214,7 +229,8 @@ const TechStack = () => {
         <SharedEnvironment />
         <Preload all />
         {isActive && !onScreen && <SkipRender />}
-        {!isMobile && (
+        {/* N8AO is several full-screen passes: the main GPU cost on weak GPUs */}
+        {!isMobile && tier === "high" && (
           <EffectComposer enableNormalPass={false} enabled={onScreen}>
             <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
           </EffectComposer>
