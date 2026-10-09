@@ -12,7 +12,13 @@ import {
 } from "./utils/mouseUtils";
 import setAnimations from "./utils/animationUtils";
 import { setProgress } from "../Loading";
-import { killCharTimeline, setCharTimelineListener, type StandardMesh } from "../utils/GsapScroll";
+import {
+  killCharTimeline,
+  setAllTimeline,
+  setCharTimeline,
+  setCharTimelineListener,
+  type StandardMesh,
+} from "../utils/GsapScroll";
 import onDebouncedResize from "../utils/debouncedResize";
 
 const Scene = () => {
@@ -86,7 +92,11 @@ const Scene = () => {
     let removeResize: (() => void) | undefined;
 
     loadCharacter().then(async (gltf) => {
+      // Timelines are module-wide: a disposed mount (StrictMode's first one) whose
+      // load finishes last must not rebind them to its own camera/character
       if (disposed || !gltf) return;
+      setCharTimeline(gltf.scene, camera);
+      setAllTimeline();
       const animations = setAnimations(gltf);
       if (hoverDivRef.current) animations.hover(gltf, hoverDivRef.current);
       mixer = animations.mixer;

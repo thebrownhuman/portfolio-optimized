@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { GLTF, GLTFLoader, MeshoptDecoder } from "three-stdlib";
-import { setCharTimeline, setAllTimeline } from "../../utils/GsapScroll";
 
 const setCharacter = (
   renderer: THREE.WebGLRenderer,
@@ -41,8 +40,6 @@ const setCharacter = (
               }
             });
             await renderer.compileAsync(character, camera, scene);
-            setCharTimeline(character, camera);
-            setAllTimeline();
             for (const name of ["footR", "footL"]) {
               const foot = character.getObjectByName(name);
               if (foot) foot.position.y = 3.36;
