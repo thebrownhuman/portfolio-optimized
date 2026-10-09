@@ -222,7 +222,7 @@ function exitFrames(wrap: HTMLElement, hover: HTMLElement, expander: HTMLElement
 
 // Safety net: if the scene never reports loaded (a hung or failed request we
 // didn't catch), finish the loader anyway rather than leave the visitor stuck
-const LOAD_DEADLINE_MS = 30000;
+const LOAD_DEADLINE_MS = 12000;
 
 export const setProgress = (setLoading: (value: number) => void) => {
   let percent: number = 0;
