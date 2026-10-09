@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import gsap from "gsap";
+import { timelineScrub } from "./scrollMode";
 
 let charCtx: gsap.Context | undefined;
 let allCtx: gsap.Context | undefined;
@@ -45,7 +46,7 @@ function buildCharTimeline(
       trigger: ".landing-section",
       start: "top top",
       end: "bottom top",
-      scrub: true,
+      scrub: timelineScrub,
       invalidateOnRefresh: true,
       onUpdate: () => onCharTimelineUpdate?.(),
     },
@@ -55,7 +56,7 @@ function buildCharTimeline(
       trigger: ".about-section",
       start: "center 55%",
       end: "bottom top",
-      scrub: true,
+      scrub: timelineScrub,
       invalidateOnRefresh: true,
       onUpdate: () => {
         syncFlicker();
@@ -68,7 +69,7 @@ function buildCharTimeline(
       trigger: ".whatIDO",
       start: "top top",
       end: "bottom top",
-      scrub: true,
+      scrub: timelineScrub,
       invalidateOnRefresh: true,
       onUpdate: () => {
         syncFlicker();
@@ -188,7 +189,7 @@ function buildAllTimeline() {
       // Start as the heading scrolls in, so entries reveal with it instead of popping in mid-screen
       start: "top 50%",
       end: "100% center",
-      scrub: true,
+      scrub: timelineScrub,
       invalidateOnRefresh: true,
     },
   });

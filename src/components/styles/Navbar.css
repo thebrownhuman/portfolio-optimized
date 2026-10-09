@@ -81,3 +81,17 @@
     font-size: 18px;
   }
 }
+
+/* Dev-only: shown when the ?scroll= test param is present */
+.scroll-mode-badge {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 99999;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #5eead4;
+  font: 12px/1.2 monospace;
+  pointer-events: none;
+}

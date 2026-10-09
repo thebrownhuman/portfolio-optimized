@@ -4,8 +4,24 @@
     {
       "name": "dev",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--host", "--port", "5174"],
+      "runtimeArgs": [
+        "node_modules/vite/bin/vite.js",
+        "--host",
+        "--port",
+        "5174"
+      ],
       "port": 5174
+    },
+    {
+      "name": "scroll-modes",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "node_modules/vite/bin/vite.js",
+        "--host",
+        "--port",
+        "5180"
+      ],
+      "port": 5180
     }
   ]
 }
