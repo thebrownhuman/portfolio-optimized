@@ -26,3 +26,77 @@
     max-width: var(--cWidth);
   }
 }
+
+/* Wide screens: the content column grows from 1300px (at 1733px) to 1800px
+   (at 2400px and up) instead of leaving ~580px empty on each side at 2464.
+   Type and the Work image scale with it, so at 1300px everything is exactly
+   the old size. Breakpoints at 1600px and below are untouched. The "html"
+   prefix outranks the component stylesheets, which load after this one. */
+@media only screen and (min-width: 1601px) {
+  :root {
+    --wideColumn: clamp(1300px, 75vw, 1800px);
+  }
+  .section-container {
+    width: var(--wideColumn);
+  }
+  html .work-section h2 {
+    font-size: calc(var(--wideColumn) * 70 / 1300);
+  }
+  html .carousel-content {
+    gap: calc(var(--wideColumn) * 60 / 1300);
+  }
+  html .carousel-number h3 {
+    font-size: calc(var(--wideColumn) * 60 / 1300);
+  }
+  html .carousel-details h4 {
+    font-size: calc(var(--wideColumn) * 28 / 1300);
+  }
+  html .carousel-category {
+    font-size: calc(var(--wideColumn) * 16 / 1300);
+  }
+  html .carousel-tools .tools-label {
+    font-size: calc(var(--wideColumn) * 14 / 1300);
+  }
+  html .carousel-tools p {
+    font-size: calc(var(--wideColumn) * 15 / 1300);
+  }
+  html .work-image img {
+    max-height: calc(var(--wideColumn) * 400 / 1300);
+  }
+  html .career-section h2 {
+    font-size: calc(var(--wideColumn) * 70 / 1300);
+    line-height: calc(var(--wideColumn) * 70 / 1300);
+  }
+  html .career-info-box {
+    margin-bottom: calc(var(--wideColumn) * 50 / 1300);
+  }
+  html .career-info-in {
+    gap: calc(var(--wideColumn) * 50 / 1300);
+  }
+  html .career-info-box p {
+    font-size: calc(var(--wideColumn) * 18 / 1300);
+  }
+  html .career-info h3 {
+    font-size: calc(var(--wideColumn) * 48 / 1300);
+    line-height: calc(var(--wideColumn) * 45 / 1300);
+  }
+  html .career-info h4 {
+    font-size: calc(var(--wideColumn) * 33 / 1300);
+    line-height: calc(var(--wideColumn) * 30 / 1300);
+  }
+  html .career-info h5 {
+    font-size: calc(var(--wideColumn) * 20 / 1300);
+  }
+  html .contact-section h3 {
+    font-size: calc(var(--wideColumn) * 60 / 1300);
+  }
+  html a.contact-social {
+    font-size: calc(var(--wideColumn) * 25 / 1300);
+  }
+  html .contact-box h2 {
+    font-size: calc(var(--wideColumn) * 23 / 1300);
+  }
+  html .contact-box h5 {
+    font-size: calc(var(--wideColumn) * 20 / 1300);
+  }
+}
