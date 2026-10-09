@@ -664,7 +664,7 @@ This is why the loading screen exists — the 3D content must fully load before 
 git clone git@github.com:thebrownhuman/shivanshPortfolio.git portfolio
 cd portfolio
 docker build -t shivansh-portfolio .
-docker run -d -p 3001:80 --name portfolio shivansh-portfolio
+docker run -d -p 3001:8080 --name portfolio shivansh-portfolio
 ```
 
 **Port choice:** 3001 — Port 80 was already taken by `my-nginx` container.
@@ -735,7 +735,7 @@ git lfs pull
 # Verified: character.glb now 2.3 MB
 docker stop portfolio && docker rm portfolio
 docker build -t shivansh-portfolio .
-docker run -d -p 3001:80 --name portfolio shivansh-portfolio
+docker run -d -p 3001:8080 --name portfolio shivansh-portfolio
 ```
 
 **Why the loading screen was stuck:** The `setProgress` function in `Loading.tsx` uses a fake progress bar that crawls after 50% (adds 0 or 1 every 2 seconds). Meanwhile, `loadCharacter()` in `Scene.tsx` tries to parse the GLB file. With only a 132-byte text file instead of a real 2.3 MB 3D model, the GLTFLoader/DRACOLoader couldn't parse it. The `loadCharacter()` promise never resolved, so `progress.loaded()` was never called, and the progress bar was stuck in its slow crawl phase.
@@ -753,6 +753,14 @@ docker run -d -p 3001:80 --name portfolio shivansh-portfolio
 **Fix:** Hard clear Chrome cache for `shivanshmishra.in` via DevTools → Application → Clear site data, or `Ctrl + Shift + Delete`.
 
 **Lesson:** When serving broken files that later get fixed, the nginx cache headers can work against you. The 30-day cache on `/models/` meant Chrome stubbornly held onto the broken pointer file.
+
+---
+
+### 32. Switched Container to nginx-unprivileged on Port 8080 (2026-10-09, DONE)
+
+**What:** Serve stage now uses `nginxinc/nginx-unprivileged:1.31.5-alpine` and nginx listens on 8080 inside the container. Homelab run command is now `docker run -d -p 3001:8080 --name portfolio shivansh-portfolio`.
+
+**Why:** The previous image (`nginx:alpine` + `USER nginx`) failed to start: nginx running as non-root could not create `/var/cache/nginx/client_temp`, bind port 80, or write its pid file. The unprivileged image already runs as uid 101 and is set up for that.
 
 ---
 
@@ -777,7 +785,7 @@ git pull
 git lfs pull  # Important: always pull LFS files
 docker stop portfolio && docker rm portfolio
 docker build -t shivansh-portfolio .
-docker run -d -p 3001:80 --name portfolio shivansh-portfolio
+docker run -d -p 3001:8080 --name portfolio shivansh-portfolio
 ```
 
 **Future improvement:** Set up GHCR authentication on the homelab so Watchtower can auto-pull and redeploy — same as the email service setup.
