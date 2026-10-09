@@ -31,6 +31,8 @@ export default function setSplitText() {
     para.split = new SplitText(para, {
       type: "lines,words",
       linesClass: "split-line",
+      // Words stay readable as plain text; the default aria-label isn't allowed on a <p>
+      aria: "none",
     });
 
     para.anim = gsap.fromTo(

@@ -69,7 +69,7 @@ const Work = () => {
           My <span>Work</span>
         </h2>
 
-        <div className="carousel-wrapper">
+        <div className="carousel-wrapper" role="region" aria-roledescription="carousel" aria-label="Projects">
           {/* Navigation Arrows */}
           <button
             className="carousel-arrow carousel-arrow-left"
@@ -97,7 +97,16 @@ const Work = () => {
               }}
             >
               {projects.map((project, index) => (
-                <div className="carousel-slide" key={index}>
+                <div
+                  className="carousel-slide"
+                  key={index}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${index + 1} of ${projects.length}`}
+                  aria-hidden={index !== currentIndex}
+                  // Off-screen slides leave the tab order (React 18 has no typed inert prop)
+                  {...(index !== currentIndex ? { inert: "" } : {})}
+                >
                   <div className="carousel-content">
                     <div className="carousel-info">
                       <div className="carousel-number">
@@ -123,6 +132,10 @@ const Work = () => {
             </div>
           </div>
 
+          <p className="sr-only" aria-live="polite" aria-atomic="true">
+            Project {currentIndex + 1} of {projects.length}: {projects[currentIndex].title}
+          </p>
+
           {/* Dot Indicators */}
           <div className="carousel-dots">
             {projects.map((_, index) => (
@@ -132,6 +145,7 @@ const Work = () => {
                   }`}
                 onClick={() => goToSlide(index)}
                 aria-label={`Go to project ${index + 1}`}
+                aria-current={index === currentIndex ? "true" : undefined}
                 data-cursor="disable"
               />
             ))}

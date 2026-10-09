@@ -29,6 +29,9 @@ const MainContainer = ({ children }: PropsWithChildren) => {
 
   return (
     <div className="container-main">
+      <a className="skip-link" href="#landingDiv">
+        Skip to content
+      </a>
       <Cursor />
       <Navbar />
       <SocialIcons />

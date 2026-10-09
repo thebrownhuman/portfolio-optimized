@@ -37,7 +37,9 @@ export function initialFX() {
     }
   );
 
-  let TextProps = { type: "chars,lines", linesClass: "split-h2" };
+  // aria "hidden": the swapping words are labelled on their parent h2s in Landing.tsx
+  // (SplitText's default aria-label on these plain divs is invalid ARIA)
+  let TextProps = { type: "chars,lines", linesClass: "split-h2", aria: "hidden" as const };
 
   var landingText2 = new SplitText(".landing-h2-info", TextProps);
   gsap.fromTo(

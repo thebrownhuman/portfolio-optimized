@@ -14,6 +14,19 @@ const WhatIDo = () => {
     // Store stable references so cleanup can remove the exact same listeners
     const clickHandlers: Array<{ el: HTMLDivElement; handler: () => void }> = [];
 
+    // Keyboard: Enter/Space toggle a box the same way a tap does
+    const keyHandlers: Array<{ el: HTMLDivElement; handler: (e: KeyboardEvent) => void }> = [];
+    containerRef.current.forEach((container) => {
+      if (!container) return;
+      const handler = (e: KeyboardEvent) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        handleClick(container);
+      };
+      keyHandlers.push({ el: container, handler });
+      container.addEventListener("keydown", handler);
+    });
+
     if (isTouch) {
       containerRef.current.forEach((container) => {
         if (container) {
@@ -53,6 +66,7 @@ const WhatIDo = () => {
       clickHandlers.forEach(({ el, handler }) => {
         el.removeEventListener("click", handler);
       });
+      keyHandlers.forEach(({ el, handler }) => el.removeEventListener("keydown", handler));
     };
   }, []);
   return (
@@ -67,7 +81,7 @@ const WhatIDo = () => {
       </div>
       <div className="what-box">
         <div className="what-box-in" ref={boxInRef}>
-          <div className="what-border2">
+          <div className="what-border2" aria-hidden="true">
             <svg width="100%">
               <line
                 x1="0"
@@ -92,8 +106,11 @@ const WhatIDo = () => {
           <div
             className="what-content what-noTouch"
             ref={(el) => setRef(el, 0)}
+            role="button"
+            tabIndex={0}
+            aria-expanded="false"
           >
-            <div className="what-border1">
+            <div className="what-border1" aria-hidden="true">
               <svg height="100%">
                 <line
                   x1="0"
@@ -115,7 +132,7 @@ const WhatIDo = () => {
                 />
               </svg>
             </div>
-            <div className="what-corner"></div>
+            <div className="what-corner" aria-hidden="true"></div>
 
             <div className="what-content-in">
               <h3>FRONTEND</h3>
@@ -133,14 +150,17 @@ const WhatIDo = () => {
                 <div className="what-tags">CSS3</div>
                 <div className="what-tags">Tkinter</div>
               </div>
-              <div className="what-arrow"></div>
+              <div className="what-arrow" aria-hidden="true"></div>
             </div>
           </div>
           <div
             className="what-content what-noTouch"
             ref={(el) => setRef(el, 1)}
+            role="button"
+            tabIndex={0}
+            aria-expanded="false"
           >
-            <div className="what-border1">
+            <div className="what-border1" aria-hidden="true">
               <svg height="100%">
                 <line
                   x1="0"
@@ -153,7 +173,7 @@ const WhatIDo = () => {
                 />
               </svg>
             </div>
-            <div className="what-corner"></div>
+            <div className="what-corner" aria-hidden="true"></div>
             <div className="what-content-in">
               <h3>BACKEND & AUTOMATION</h3>
               <h4>Scalable Solutions & Tooling</h4>
@@ -173,7 +193,7 @@ const WhatIDo = () => {
                 <div className="what-tags">Selenium</div>
                 <div className="what-tags">AWS</div>
               </div>
-              <div className="what-arrow"></div>
+              <div className="what-arrow" aria-hidden="true"></div>
             </div>
           </div>
         </div>
@@ -185,7 +205,8 @@ const WhatIDo = () => {
 export default WhatIDo;
 
 function handleClick(container: HTMLDivElement) {
-  container.classList.toggle("what-content-active");
+  const active = container.classList.toggle("what-content-active");
+  container.setAttribute("aria-expanded", String(active));
   container.classList.remove("what-sibling");
   if (container.parentElement) {
     const siblings = Array.from(container.parentElement.children);
@@ -193,6 +214,7 @@ function handleClick(container: HTMLDivElement) {
     siblings.forEach((sibling) => {
       if (sibling !== container) {
         sibling.classList.remove("what-content-active");
+        if (sibling.hasAttribute("aria-expanded")) sibling.setAttribute("aria-expanded", "false");
         sibling.classList.toggle("what-sibling");
       }
     });

@@ -98,22 +98,22 @@ const SocialIcons = () => {
     <div className="icons-section">
       <div className="social-icons" data-cursor="icons" id="social">
         <span>
-          <a href="https://github.com/thebrownhuman" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/thebrownhuman" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
             <FaGithub />
           </a>
         </span>
         <span>
-          <a href="https://www.linkedin.com/in/thebrownhuman/" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.linkedin.com/in/thebrownhuman/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
             <FaLinkedinIn />
           </a>
         </span>
         <span>
-          <a href="https://www.instagram.com/thebrownhuman/" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.instagram.com/thebrownhuman/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
             <FaInstagram />
           </a>
         </span>
         <span>
-          <a href="https://x.com/thebrownhuman" target="_blank" rel="noopener noreferrer">
+          <a href="https://x.com/thebrownhuman" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
             <FaXTwitter />
           </a>
         </span>

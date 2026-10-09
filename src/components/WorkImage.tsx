@@ -20,7 +20,7 @@ const WorkImage = (props: Props) => {
             <MdArrowOutward />
           </div>
         )}
-        <img src={props.image} alt={props.alt} loading="lazy" decoding="async" />
+        <img src={props.image} alt={props.alt ? `Screenshot of ${props.alt}` : ""} loading="lazy" decoding="async" />
       </Wrapper>
     </div>
   );
