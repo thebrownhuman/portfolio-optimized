@@ -120,3 +120,19 @@ Visual verification (dev servers, StrictMode, served code curl-checked), dfaccc2
 - [x] 4 Self-hosted Geist + fallback metrics (3ad0d62): CLS 0.002 (1440) / 0.000 (390)
 - [x] 5 nginx fonts/wasm cache + gzip glb/hdr (adf3aad): nginx -t OK, no brotli on alpine
 - [x] Full verify HEAD 61537e1 vs 6d40283 (63 shots, 1920/1440/1146/390): no regressions. >0.5% only loader marquee/counter timing (#01), blink/typing phase, navbar scramble timing, TechStack physics (#12/#13). Text: same line breaks, AA-only diffs. TechStack lighting matches by eye. Resize cycle OK, idle anims play, 0 console errors, CLS 0.000 (1440) / 0.000 (390)
+
+## Scroll modes (feat/scroll-modes, worker1)
+Trackpad lag test switch: `http://localhost:5180/?scroll=current|light|native|normalize|hybrid` (no param = current).
+Headless Chrome 1440x900, all modes: no console errors, intro OK, navbar ABOUT/WORK/CONTACT land the same in every mode (top 33/0/565, contact is page end),
+resize cycle animates, same section anchors give the same state (career heading at 50%: character opacity 0, entries 0.42/0.07/0).
+
+| mode | trackpad burst (319px in) travel | settle after last event | mouse 5x100 travel | settle after last | FPS 4x CPU |
+|---|---|---|---|---|---|
+| current | 542px (1.7x) | 961ms | 850px | 681ms | 51 |
+| light | 542px | 530ms | 850px | 313ms | 52 |
+| native | 319px (1:1) | 309ms | 500px | 41ms | 61 |
+| normalize | 542px | 938ms | 850px | 666ms | 65 |
+| hybrid | 319px | 555ms | 500px | 72ms | 56 |
+
+Trackpad burst = 40 wheel events, deltaY 4-12, 10ms apart, Chrome --disable-smooth-scrolling (precise deltas).
+Bench: session scratchpad bench/modes.mjs; shots in tasks/shots/scroll-modes.
