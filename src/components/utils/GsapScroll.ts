@@ -193,13 +193,16 @@ function buildAllTimeline() {
       invalidateOnRefresh: true,
     },
   });
+  // Grow the line with scaleY (not max-height) so the dot riding its tip doesn't
+  // shift layout; the dot is counter-scaled to keep its shape and glow
+  const grow = { scale: 0.1 };
+  const applyGrow = () => {
+    gsap.set(".career-timeline", { scaleY: grow.scale });
+    gsap.set(".career-dot", { scaleY: 1 / grow.scale });
+  };
+  applyGrow();
   careerTimeline
-    .fromTo(
-      ".career-timeline",
-      { maxHeight: "10%" },
-      { maxHeight: "100%", duration: 0.5 },
-      0
-    )
+    .fromTo(grow, { scale: 0.1 }, { scale: 1, duration: 0.5, onUpdate: applyGrow }, 0)
 
     .fromTo(
       ".career-timeline",

@@ -86,14 +86,15 @@
   position: absolute;
   top: -50px;
   left: 50%;
-  transform: translateX(-50%);
+  /* Collapsed until GsapScroll grows it with scaleY (no layout shift) */
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top center;
   width: 3px;
   height: 100%;
   background-image: linear-gradient(to top,
       #14b8a6 20%,
       var(--accentColor) 50%,
       transparent 95%);
-  max-height: 0%;
 }
 
 .career-dot {
