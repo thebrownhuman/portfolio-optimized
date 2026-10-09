@@ -26,3 +26,88 @@
     max-width: var(--cWidth);
   }
 }
+
+/* Wide screens: the content column grows with the viewport (up to 1800px)
+   instead of leaving ~580px empty on each side at 2464, and the fixed frame
+   (logo, social icons, nav, RESUME) moves out with it: its 1920px cap is lifted,
+   so it stays at 3% from the screen edges. The column then keeps clear of it:
+   - left: icons end at 3vw + 28px; keep the 1920 baseline gap of 11.3vw
+     -> width <= 100vw - 2 * (3vw + 28px + 11.3vw) = 71.4vw - 56px
+   - right: RESUME (147px) starts at 97vw - 147px; keep >= 120px from it
+     -> width <= 2 * (97vw - 147px - 120px) - 100vw = 94vw - 534px
+   Floor 1200px (the 1600px layout). Type, gaps and the Work image scale with
+   the column but never below their old size. Breakpoints at 1600px and below
+   are untouched. The "html" prefix outranks the component stylesheets, which
+   load after this one. */
+@media only screen and (min-width: 1601px) {
+  html body {
+    --cMaxWidth: 100vw;
+  }
+  html:root {
+    --wideColumn: clamp(1200px, min(71.4vw - 56px, 94vw - 534px), 1800px);
+    --wideScale: max(var(--wideColumn), 1300px);
+  }
+  .section-container {
+    width: var(--wideColumn);
+  }
+  html .work-section h2 {
+    font-size: calc(var(--wideScale) * 70 / 1300);
+  }
+  html .carousel-content {
+    gap: calc(var(--wideScale) * 60 / 1300);
+  }
+  html .carousel-number h3 {
+    font-size: calc(var(--wideScale) * 60 / 1300);
+  }
+  html .carousel-details h4 {
+    font-size: calc(var(--wideScale) * 28 / 1300);
+  }
+  html .carousel-category {
+    font-size: calc(var(--wideScale) * 16 / 1300);
+  }
+  html .carousel-tools .tools-label {
+    font-size: calc(var(--wideScale) * 14 / 1300);
+  }
+  html .carousel-tools p {
+    font-size: calc(var(--wideScale) * 15 / 1300);
+  }
+  html .work-image img {
+    max-height: calc(var(--wideScale) * 400 / 1300);
+  }
+  html .career-section h2 {
+    font-size: calc(var(--wideScale) * 70 / 1300);
+    line-height: calc(var(--wideScale) * 70 / 1300);
+  }
+  html .career-info-box {
+    margin-bottom: calc(var(--wideScale) * 50 / 1300);
+  }
+  html .career-info-in {
+    gap: calc(var(--wideScale) * 50 / 1300);
+  }
+  html .career-info-box p {
+    font-size: calc(var(--wideScale) * 18 / 1300);
+  }
+  html .career-info h3 {
+    font-size: calc(var(--wideScale) * 48 / 1300);
+    line-height: calc(var(--wideScale) * 45 / 1300);
+  }
+  html .career-info h4 {
+    font-size: calc(var(--wideScale) * 33 / 1300);
+    line-height: calc(var(--wideScale) * 30 / 1300);
+  }
+  html .career-info h5 {
+    font-size: calc(var(--wideScale) * 20 / 1300);
+  }
+  html .contact-section h3 {
+    font-size: calc(var(--wideScale) * 60 / 1300);
+  }
+  html a.contact-social {
+    font-size: calc(var(--wideScale) * 25 / 1300);
+  }
+  html .contact-box h2 {
+    font-size: calc(var(--wideScale) * 23 / 1300);
+  }
+  html .contact-box h5 {
+    font-size: calc(var(--wideScale) * 20 / 1300);
+  }
+}
