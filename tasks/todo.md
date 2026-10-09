@@ -119,4 +119,4 @@ Visual verification (dev servers, StrictMode, served code curl-checked), dfaccc2
 - [x] 3 Shared HDR (01ce3e0): 1 fetch instead of 2; load long-task total (4x CPU) 2178 -> 1846ms
 - [x] 4 Self-hosted Geist + fallback metrics (3ad0d62): CLS 0.002 (1440) / 0.000 (390)
 - [x] 5 nginx fonts/wasm cache + gzip glb/hdr (adf3aad): nginx -t OK, no brotli on alpine
-- [ ] Full pixel-diff pass of HEAD vs 6d40283 (only item 2 diffed so far), see tasks/handoff.md
+- [x] Full verify HEAD 61537e1 vs 6d40283 (63 shots, 1920/1440/1146/390): no regressions. >0.5% only loader marquee/counter timing (#01), blink/typing phase, navbar scramble timing, TechStack physics (#12/#13). Text: same line breaks, AA-only diffs. TechStack lighting matches by eye. Resize cycle OK, idle anims play, 0 console errors, CLS 0.000 (1440) / 0.000 (390)
