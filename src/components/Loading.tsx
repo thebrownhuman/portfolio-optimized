@@ -38,8 +38,9 @@ const Loading = ({ percent }: { percent: number }) => {
   }, [clicked]);
 
   // Fetch the intro chunk while the scene loads, not after 100%
+  // loadInitialFX reports a failure; the prefetch only must not leave it unhandled
   useEffect(() => {
-    import("./utils/initialFX");
+    import("./utils/initialFX").catch(() => {});
   }, []);
 
   // At 100% swap straight to "Welcome" (there used to be a dead 600ms on 100%),
