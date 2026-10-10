@@ -21,12 +21,22 @@
   position: fixed;
   width: 300px;
   height: 300px;
-  background-color: #22d3ee;
-  box-shadow: inset -50px 40px 50px rgba(0, 180, 180, 0.6);
-  filter: blur(60px);
-  border-radius: 50%;
   will-change: transform;
   animation: loadingCircle 5s linear infinite;
+}
+
+/* The glows are pre-blurred images (public/images/glow1/2.webp: the original
+   teal disc + inset shadow under filter: blur(60px)/blur(50px), rendered once).
+   A live blur filter on these big rotating layers cost iOS ~8ms a frame and a
+   ~240ms first raster right after the loader left. The ::before covers the
+   blur's full reach (3 x radius) around the same 300px box, so the element's
+   transform and rotation are unchanged */
+.landing-circle1::before,
+.landing-circle2::before {
+  content: "";
+  position: absolute;
+  inset: -180px;
+  background: url(/images/glow1.webp) center / 100% 100% no-repeat;
 }
 
 .nav-fade {
@@ -62,12 +72,13 @@
   display: none;
   width: 300px;
   height: 300px;
-  background-color: #22d3ee;
-  box-shadow: inset -50px 40px 50px rgba(0, 180, 180, 0.6);
-  filter: blur(50px);
-  border-radius: 50%;
   will-change: transform;
   animation: loadingCircle2 5s linear infinite;
+}
+
+.landing-circle2::before {
+  inset: -150px;
+  background-image: url(/images/glow2.webp);
 }
 
 @keyframes loadingCircle2 {
