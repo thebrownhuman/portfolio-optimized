@@ -1,4 +1,5 @@
 import { prefersReducedMotion } from "./reducedMotion";
+import { coarsePointer } from "./pointer";
 
 // Dev/test switch for comparing scroll feel: ?scroll=original|current|light|native|normalize|hybrid.
 // Without the param the site uses "original": the first site's ScrollSmoother feel,
@@ -16,7 +17,6 @@ export const scrollMode: ScrollMode = (MODES as readonly string[]).includes(para
 export const showScrollBadge = param !== null;
 
 // Touch screens scroll natively by default; ?scroll= still forces a mode for testing
-const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 const defaultMode = param === null;
 
 // Reduced motion always gets native scroll, whatever ?scroll= says

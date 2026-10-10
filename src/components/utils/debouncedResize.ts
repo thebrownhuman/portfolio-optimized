@@ -1,6 +1,7 @@
 import { span } from "./perfSpan";
 import { debugFlag, getRevealAt, probe } from "./debugProbe";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { coarsePointer } from "./pointer";
 
 type Callback = () => void;
 
@@ -9,7 +10,15 @@ let timer: number | undefined;
 
 const ignoreEarly = debugFlag("noresize");
 
+// On touch devices the browser toolbar collapsing/expanding while scrolling fires
+// a height-only resize ~60 times a second (iOS). The layout is sized to the large
+// viewport (100vh), so nothing needs rebuilding then: only a width change
+// (rotation, split view) does
+let lastWidth = window.innerWidth;
+
 const onResize = () => {
+  if (coarsePointer && window.innerWidth === lastWidth) return;
+  lastWidth = window.innerWidth;
   probe("debounced-resize queued");
   // ?debug&noresize: ignore resizes until 3s after the reveal
   const reveal = getRevealAt();
