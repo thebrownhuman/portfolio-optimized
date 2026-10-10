@@ -12,6 +12,7 @@ import {
   usesSmoother,
 } from "./utils/scrollMode";
 import { prefersReducedMotion } from "./utils/reducedMotion";
+import { traceNavTap } from "./utils/debugProbe";
 
 gsap.registerPlugin(ScrollSmoother, ScrollTrigger);
 // undefined in the native scroll modes (?scroll=native|hybrid)
@@ -49,17 +50,27 @@ const Navbar = () => {
     let links = document.querySelectorAll(".header ul a");
     links.forEach((elem) => {
       let element = elem as HTMLAnchorElement;
+      let downAt: number | undefined;
+      const onDown = () => (downAt = performance.now());
       const handler = (e: Event) => {
         e.preventDefault();
         let section = element.getAttribute("data-href");
-        if (section) scrollToSection(section);
+        if (section) {
+          traceNavTap(section, downAt);
+          scrollToSection(section);
+        }
       };
       element.addEventListener("click", handler);
+      element.addEventListener("pointerdown", onDown, { passive: true });
       clickHandlers.push({ el: element, handler });
+      clickHandlers.push({ el: element, handler: onDown });
     });
 
     return () => {
-      clickHandlers.forEach(({ el, handler }) => el.removeEventListener("click", handler));
+      clickHandlers.forEach(({ el, handler }) => {
+        el.removeEventListener("click", handler);
+        el.removeEventListener("pointerdown", handler);
+      });
       smoother?.kill();
       smoother = undefined;
       if (scrollMode === "normalize") ScrollTrigger.normalizeScroll(false);

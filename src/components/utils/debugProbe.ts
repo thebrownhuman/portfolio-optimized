@@ -104,3 +104,54 @@ if (on) {
   };
   requestAnimationFrame(tick);
 }
+
+// ?debug: one nav-link tap, measured from the finger down to the end of the
+// jump, for the badge (iOS showed the link highlight with the page standing still)
+let lastNav = "";
+export const getNavSummary = () => lastNav;
+
+export function traceNavTap(label: string, downAt: number | undefined) {
+  if (!on) return;
+  const click = performance.now();
+  let firstScroll: number | undefined;
+  let lastScroll = click;
+  let prev = click;
+  let maxFrame = 0;
+  const counts = { resize: 0, vv: 0, refresh: 0 };
+  const onScroll = () => {
+    const now = performance.now();
+    firstScroll ??= now;
+    lastScroll = now;
+  };
+  const onResize = () => counts.resize++;
+  const onVv = () => counts.vv++;
+  const onRefresh = () => {
+    counts.refresh++;
+  };
+  window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+  window.addEventListener("resize", onResize);
+  window.visualViewport?.addEventListener("resize", onVv);
+  ScrollTrigger.addEventListener("refresh", onRefresh);
+  lastNav = `${label}: running`;
+  const frame = (now: number) => {
+    maxFrame = Math.max(maxFrame, now - prev);
+    prev = now;
+    // Done once scrolling has been still for 400ms (or nothing moved for 1.5s)
+    const idle = now - lastScroll > 400 && (firstScroll !== undefined || now - click > 1500);
+    if (!idle && now - click < 8000) {
+      requestAnimationFrame(frame);
+      return;
+    }
+    window.removeEventListener("scroll", onScroll, { capture: true });
+    window.removeEventListener("resize", onResize);
+    window.visualViewport?.removeEventListener("resize", onVv);
+    ScrollTrigger.removeEventListener("refresh", onRefresh);
+    const ms = (n: number) => `${Math.round(n)}ms`;
+    lastNav =
+      `${label}: down→click ${downAt === undefined ? "?" : ms(click - downAt)}` +
+      `, click→1st scroll ${firstScroll === undefined ? "none" : ms(firstScroll - click)}` +
+      `, jump ${ms(lastScroll - click)}, max frame ${ms(maxFrame)}` +
+      `, resize ${counts.resize}, vv-resize ${counts.vv}, ST refresh ${counts.refresh}`;
+  };
+  requestAnimationFrame(frame);
+}

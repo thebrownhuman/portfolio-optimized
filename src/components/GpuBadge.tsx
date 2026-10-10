@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLoading } from "../context/LoadingProvider";
-import { probeTimeline, recentResizeEvents } from "./utils/debugProbe";
+import { getNavSummary, probeTimeline, recentResizeEvents } from "./utils/debugProbe";
 import { getGpuTierReason, gpuRenderer, useGpuTier } from "./utils/gpuTier";
 
 const show = new URLSearchParams(window.location.search).has("debug");
@@ -90,6 +90,7 @@ const GpuBadge = () => {
       GPU: {tier} (reason: {getGpuTierReason()}) {gpuRenderer || "unknown renderer"} | dpr{" "}
       {window.devicePixelRatio} canvas {canvas?.getAttribute("width") ?? "?"}px ({canvas?.style.width ?? "?"} css)
       | window {window.innerWidth}x{window.innerHeight} | resizes: {recentResizeEvents() || "none"}
+      | nav: {getNavSummary() || "no tap yet"}
       | {intro}
     </div>
   );
