@@ -295,6 +295,18 @@
     width: 40px;
     height: 40px;
     font-size: 18px;
+    /* Here the arrows sit over the slides: a live backdrop blur there made iOS
+       Safari re-blur the screenshots every frame while scrolling into Work.
+       A darker tint keeps them readable without it */
+    backdrop-filter: none;
+    background: rgba(10, 14, 23, 0.6);
+  }
+
+  /* One composited layer for all five slides (5 screens wide, at 3x on phones)
+     made iOS rasterize every screenshot on arrival; the transition still gets
+     its own layer while it runs */
+  .carousel-track {
+    will-change: auto;
   }
 
   .carousel-arrow-left {
