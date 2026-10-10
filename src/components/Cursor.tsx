@@ -2,8 +2,12 @@ import { useEffect, useRef } from "react";
 import "./styles/Cursor.css";
 import gsap from "gsap";
 import { prefersReducedMotion } from "./utils/reducedMotion";
+import { debugFlag } from "./utils/debugProbe";
 
-const Cursor = () => {
+// ?debug&nocursor: no custom cursor at all
+const Cursor = () => (debugFlag("nocursor") ? null : <CursorFollower />);
+
+const CursorFollower = () => {
   const cursorRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let hover = false;

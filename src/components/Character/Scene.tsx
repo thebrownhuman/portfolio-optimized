@@ -4,6 +4,7 @@ import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
 import { span } from "../utils/perfSpan";
+import { debugDprCap } from "../utils/debugProbe";
 import handleResize from "./utils/resizeUtils";
 import {
   WORK_IMAGES,
@@ -60,7 +61,7 @@ const Scene = () => {
       antialias: getGpuTier() === "high",
     });
     renderer.setSize(container.width, container.height);
-    const maxPixelRatio = () => (getGpuTier() === "high" ? 2 : 1);
+    const maxPixelRatio = () => debugDprCap ?? (getGpuTier() === "high" ? 2 : 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));
     const removeTierListener = onGpuTierChange(() => {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));

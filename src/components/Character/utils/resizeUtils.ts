@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { setCharTimeline, setAllTimeline } from "../../utils/GsapScroll";
+import { probe } from "../../utils/debugProbe";
 
 export default function handleResize(
   renderer: THREE.WebGLRenderer,
@@ -11,6 +12,7 @@ export default function handleResize(
   let canvas3d = canvasDiv.current.getBoundingClientRect();
   const width = canvas3d.width;
   const height = canvas3d.height;
+  probe(`renderer.setSize ${Math.round(width)}x${Math.round(height)}`);
   renderer.setSize(width, height);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();

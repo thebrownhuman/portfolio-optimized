@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLoading } from "../context/LoadingProvider";
+import { probeTimeline } from "./utils/debugProbe";
 import { getGpuTierReason, gpuRenderer, useGpuTier } from "./utils/gpuTier";
 
 const show = new URLSearchParams(window.location.search).has("debug");
@@ -59,7 +60,8 @@ function useIntroFrames(start: boolean) {
           ` | canvas ${renders.length} renders ${stats(gaps)}, >20ms ${gaps.filter((g) => g > 20).length}` +
           ` | clip t ${clip}s, max step ${worstStep.toFixed(0)}ms` +
           ` | worst frame ${worst.dt.toFixed(0)}ms @${(worst.at - first).toFixed(0)}ms` +
-          ` | spans: ${spans || "none"}`
+          ` | spans: ${spans || "none"}` +
+          ` | events: ${probeTimeline(1500)}`
       );
     };
     raf = requestAnimationFrame(tick);
@@ -78,7 +80,8 @@ const GpuBadge = () => {
   return (
     <div className="scroll-mode-badge gpu-badge" aria-hidden="true">
       GPU: {tier} (reason: {getGpuTierReason()}) {gpuRenderer || "unknown renderer"} | dpr{" "}
-      {window.devicePixelRatio} | {intro}
+      {window.devicePixelRatio} canvas {document.querySelector(".character-model canvas")?.getAttribute("width") ?? "?"}px
+      | {intro}
     </div>
   );
 };

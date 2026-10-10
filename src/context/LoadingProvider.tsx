@@ -5,6 +5,10 @@ import {
   useState,
 } from "react";
 import Loading from "../components/Loading";
+import { debugFlag } from "../components/utils/debugProbe";
+
+// ?debug&norelease: keep the loader mounted (hidden) after the reveal
+const keepLoader = debugFlag("norelease");
 
 interface LoadingType {
   isLoading: boolean;
@@ -25,7 +29,13 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
   };
   return (
     <LoadingContext.Provider value={value as LoadingType}>
-      {isLoading && <Loading percent={loading} />}
+      {keepLoader ? (
+        <div style={{ display: "contents", visibility: isLoading ? undefined : "hidden" }}>
+          <Loading percent={loading} />
+        </div>
+      ) : (
+        isLoading && <Loading percent={loading} />
+      )}
       <main className="main-body">{children}</main>
     </LoadingContext.Provider>
   );

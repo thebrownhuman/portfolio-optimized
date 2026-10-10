@@ -1,4 +1,5 @@
 import { span } from "./utils/perfSpan";
+import { debugFlag, probe } from "./utils/debugProbe";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
@@ -84,11 +85,14 @@ const Loading = ({ percent }: { percent: number }) => {
     // leave the loader stuck at 100%; open the page without the intro FX instead
     loadInitialFX().then((initialFX) => {
       if (cancelled) return;
-      setClicked(true);
+      // ?debug&noloaderexit: skip the loader's exit animation and reveal at once
+      const instant = debugFlag("noloaderexit");
+      if (!instant) setClicked(true);
       timer = setTimeout(() => {
+        probe("reveal");
         span("reveal:initialFX", () => (initialFX ? initialFX() : revealWithoutFX()));
         span("reveal:setIsLoading", () => setIsLoading(false));
-      }, 900);
+      }, instant ? 0 : 900);
     });
     return () => {
       cancelled = true;
