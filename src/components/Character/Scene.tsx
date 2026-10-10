@@ -85,7 +85,7 @@ const Scene = () => {
 
     const clock = new THREE.Clock();
     // ?debug: canvas render times and the intro clip's time at each render
-    const debugRenders: Array<[number, number]> | null = new URLSearchParams(
+    const debugRenders: Array<[number, number, number]> | null = new URLSearchParams(
       window.location.search
     ).has("debug")
       ? []
@@ -94,6 +94,14 @@ const Scene = () => {
       (window as Window & { __charRenders?: typeof debugRenders }).__charRenders = debugRenders;
     }
     let introAction: THREE.AnimationAction | null = null;
+    // The intro clip owns the head: held paused on its first frame under the
+    // loader, then playing the rise. A paused clip doesn't hold the head, so the
+    // head-follow turned it to face front and the clip snapped it down at the
+    // reveal (front -> down -> up); while playing, the two fought for frames.
+    // Follow the pointer only once the intro has finished
+    let headFollow = false;
+    const debugQuat = new THREE.Quaternion();
+    const debugVec = new THREE.Vector3();
 
     // Render on demand: full rate while something changes, otherwise only the
     // looping idle clips (typing, keys, blink, screen flicker) need frames
@@ -134,6 +142,19 @@ const Scene = () => {
       mixer = animations.mixer;
       const introClip = gltf.animations.find((clip) => clip.name === "introAnimation");
       introAction = introClip ? mixer.existingAction(introClip) : null;
+      if (introAction) {
+        const onFinished = (e: { action: THREE.AnimationAction }) => {
+          if (e.action !== introAction) return;
+          headFollow = true;
+          mixer.removeEventListener("finished", onFinished);
+        };
+        mixer.addEventListener("finished", onFinished);
+      } else {
+        headFollow = true;
+      }
+      if (debugRenders) {
+        (window as Window & { __char?: unknown }).__char = { character: gltf.scene, mixer, introAction };
+      }
       const character = gltf.scene;
       scene.add(character);
       headBone = character.getObjectByName("spine006") || null;
@@ -226,7 +247,7 @@ const Scene = () => {
       // Throttled frames keep the clock running, so the idle clips stay real-time
       if (now >= activeUntil && now - lastRender < IDLE_FRAME_MS - 1) return;
       lastRender = now;
-      if (headBone) {
+      if (headBone && headFollow) {
         const prevX = headBone.rotation.x;
         const prevY = headBone.rotation.y;
         handleHeadRotation(
@@ -245,15 +266,21 @@ const Scene = () => {
         ) {
           wake(100);
         }
-        if (screenLight) light.setPointLight(screenLight);
       }
+      if (headBone && screenLight) light.setPointLight(screenLight);
       const delta = clock.getDelta();
       if (mixer) {
         mixer.update(delta);
       }
       renderer.render(scene, camera);
       if (debugRenders && debugRenders.length < 2000) {
-        debugRenders.push([now, introAction?.time ?? -1]);
+        // Head pitch in degrees (+ up): the intro starts at about -78, the rest pose is about -6
+        let pitch = NaN;
+        if (headBone) {
+          headBone.getWorldQuaternion(debugQuat);
+          pitch = Math.round(Math.asin(debugVec.set(0, 0, 1).applyQuaternion(debugQuat).y) * 573) / 10;
+        }
+        debugRenders.push([now, introAction?.time ?? -1, pitch]);
       }
     };
     animate();
