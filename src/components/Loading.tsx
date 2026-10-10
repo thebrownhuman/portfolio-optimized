@@ -1,3 +1,4 @@
+import { span } from "./utils/perfSpan";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
@@ -39,8 +40,29 @@ const Loading = ({ percent }: { percent: number }) => {
 
   // Fetch the intro chunk while the scene loads, not after 100%
   // loadInitialFX reports a failure; the prefetch only must not leave it unhandled
+  // Once it's here, do the intro's text splitting under the loader (fonts first,
+  // so the lines split as they'll render), not in the frame the character rises
   useEffect(() => {
-    import("./utils/initialFX").catch(() => {});
+    let cancelled = false;
+    let tries = 0;
+    import("./utils/initialFX")
+      .then(({ prepareInitialFX }) => {
+        const prepare = () => {
+          if (cancelled) return;
+          if (!document.querySelector(".landing-intro h1")) {
+            // The landing chunk is still loading
+            if (++tries < 100) setTimeout(prepare, 150);
+            return;
+          }
+          const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 50));
+          idle(() => !cancelled && span("prepare:initialFX", prepareInitialFX));
+        };
+        document.fonts.ready.then(prepare);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // At 100% swap straight to "Welcome" (there used to be a dead 600ms on 100%),
@@ -64,9 +86,8 @@ const Loading = ({ percent }: { percent: number }) => {
       if (cancelled) return;
       setClicked(true);
       timer = setTimeout(() => {
-        if (initialFX) initialFX();
-        else revealWithoutFX();
-        setIsLoading(false);
+        span("reveal:initialFX", () => (initialFX ? initialFX() : revealWithoutFX()));
+        span("reveal:setIsLoading", () => setIsLoading(false));
       }, 900);
     });
     return () => {

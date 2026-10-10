@@ -11,15 +11,28 @@ const t = (seconds: number) => (prefersReducedMotion ? 0 : seconds);
 const noBlur = new URLSearchParams(window.location.search).get("fx") === "noblur";
 const blur = (px: number) => (noBlur ? "none" : `blur(${px}px)`);
 
-export function initialFX() {
-  document.body.style.overflowY = "auto";
-  setScrollPaused(false);
-  document.getElementsByTagName("main")[0].classList.add("main-active");
-  gsap.to("body", {
+// The intro text work (6 SplitText passes, ~60 char tweens, the word loops)
+// took 50-70ms on a throttled phone, and on iOS ~200ms, all in the frame where
+// the character starts rising. prepareInitialFX() does it ahead of time, while
+// the loader still covers the page, with every tween paused; initialFX() at the
+// reveal only flips classes and presses play.
+let play: (() => void) | undefined;
+
+export function prepareInitialFX() {
+  if (play) return;
+  // The landing must be mounted, or there is nothing to split yet
+  if (!document.querySelector(".landing-intro h1")) return;
+  const tweens: gsap.core.Animation[] = [];
+  const add = <T extends gsap.core.Animation>(tween: T) => {
+    tween.pause();
+    tweens.push(tween);
+    return tween;
+  };
+  add(gsap.to("body", {
     backgroundColor: "#0a0e17",
     duration: t(0.5),
     delay: t(1),
-  });
+  }));
 
   var landingText = new SplitText(
     [".landing-info h3", ".landing-intro h2", ".landing-intro h1"],
@@ -28,7 +41,7 @@ export function initialFX() {
       linesClass: "split-line",
     }
   );
-  gsap.fromTo(
+  add(gsap.fromTo(
     landingText.chars,
     { opacity: 0, y: 80, filter: blur(5) },
     {
@@ -40,14 +53,14 @@ export function initialFX() {
       stagger: t(0.025),
       delay: t(0.3),
     }
-  );
+  ));
 
   // aria "hidden": the swapping words are labelled on their parent h2s in Landing.tsx
   // (SplitText's default aria-label on these plain divs is invalid ARIA)
   let TextProps = { type: "chars,lines", linesClass: "split-h2", aria: "hidden" as const };
 
   var landingText2 = new SplitText(".landing-h2-info", TextProps);
-  gsap.fromTo(
+  add(gsap.fromTo(
     landingText2.chars,
     { opacity: 0, y: 80, filter: blur(5) },
     {
@@ -59,9 +72,9 @@ export function initialFX() {
       stagger: t(0.025),
       delay: t(0.3),
     }
-  );
+  ));
 
-  gsap.fromTo(
+  add(gsap.fromTo(
     ".landing-info-h2",
     { opacity: 0, y: 30 },
     {
@@ -71,8 +84,8 @@ export function initialFX() {
       y: 0,
       delay: t(0.8),
     }
-  );
-  gsap.fromTo(
+  ));
+  add(gsap.fromTo(
     [".header", ".icons-section", ".nav-fade"],
     { opacity: 0 },
     {
@@ -81,7 +94,7 @@ export function initialFX() {
       ease: "power1.inOut",
       delay: t(0.1),
     }
-  );
+  ));
 
   var landingText3 = new SplitText(".landing-h2-info-1", TextProps);
   var landingText4 = new SplitText(".landing-h2-1", TextProps);
@@ -91,17 +104,35 @@ export function initialFX() {
     LoopText(landingText2, landingText3),
     LoopText(landingText4, landingText5),
   ];
+  loops.forEach((tl) => tl.pause(0));
 
-  // The loops repeat forever; only run them while the landing section is on screen
-  const landing = document.querySelector(".landing-section");
-  if (prefersReducedMotion) {
-    // Hold the first word of each pair; the swap loop never runs
-    loops.forEach((tl) => tl.pause(0));
-  } else if (landing) {
-    new IntersectionObserver(([entry]) => {
-      loops.forEach((tl) => tl.paused(!entry.isIntersecting));
-    }).observe(landing);
+  play = () => {
+    document.body.style.overflowY = "auto";
+    setScrollPaused(false);
+    document.getElementsByTagName("main")[0].classList.add("main-active");
+    tweens.forEach((tween) => tween.play());
+    // The loops repeat forever; only run them while the landing section is on screen.
+    // Reduced motion holds the first word of each pair; the swap loop never runs
+    const landing = document.querySelector(".landing-section");
+    if (!prefersReducedMotion && landing) {
+      new IntersectionObserver(([entry]) => {
+        loops.forEach((tl) => tl.paused(!entry.isIntersecting));
+      }).observe(landing);
+    }
+  };
+}
+
+// At the reveal: prepare now if it hasn't happened yet, then start everything
+export function initialFX() {
+  prepareInitialFX();
+  if (play) {
+    play();
+    return;
   }
+  // No landing to animate: still open the page
+  document.body.style.overflowY = "auto";
+  setScrollPaused(false);
+  document.getElementsByTagName("main")[0]?.classList.add("main-active");
 }
 
 function LoopText(Text1: SplitText, Text2: SplitText) {
