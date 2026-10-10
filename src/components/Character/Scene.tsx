@@ -4,7 +4,7 @@ import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
 import { span } from "../utils/perfSpan";
-import { debugDprCap } from "../utils/debugProbe";
+import { debugDprCap, probe } from "../utils/debugProbe";
 import handleResize from "./utils/resizeUtils";
 import {
   WORK_IMAGES,
@@ -129,7 +129,28 @@ const Scene = () => {
     const light = setLighting(scene);
     const progress = setProgress((value) => setLoading(value));
     const { loadCharacter } = setCharacter(renderer, scene, camera);
-    let removeResize: (() => void) | undefined;
+    // The canvas follows its container's real size: window resize events on iPad
+    // (Stage Manager, split view) are not a reliable signal, and the container is
+    // sized by CSS that changes at the 1024px breakpoint
+    const fitObserver = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (!width || !height) return;
+      const size = renderer.getSize(new THREE.Vector2());
+      if (Math.round(size.x) === Math.round(width) && Math.round(size.y) === Math.round(height)) return;
+      probe(`canvas fit ${Math.round(width)}x${Math.round(height)}`);
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      wake(300);
+    });
+    fitObserver.observe(currentDiv);
+    let loadedCharacter: THREE.Object3D | null = null;
+    // Registered before the model loads: a resize during the load (iPad Stage
+    // Manager settling the window) must still resize the renderer and camera
+    const removeResize = onDebouncedResize(() => {
+      handleResize(renderer, camera, canvasDiv, loadedCharacter);
+      wake(500);
+    });
 
     loadCharacter().then(async (gltf) => {
       // Timelines are module-wide: a disposed mount (StrictMode's first one) whose
@@ -157,6 +178,7 @@ const Scene = () => {
       }
       const character = gltf.scene;
       scene.add(character);
+      loadedCharacter = character;
       headBone = character.getObjectByName("spine006") || null;
       // Exposed for the resize regression check: the scroll-driven pose
       const r = (n: number) => Math.round(n * 1000) / 1000;
@@ -181,10 +203,6 @@ const Scene = () => {
           wake(span("startIntro", animations.startIntro) + 500);
         };
         if (introRef.current.revealed) introRef.current.start();
-      });
-      removeResize = onDebouncedResize(() => {
-        handleResize(renderer, camera, canvasDiv, character);
-        wake(500);
       });
     }).catch((error) => {
       // Without this the loader waits at ~92% forever; open the site without the character
@@ -291,7 +309,8 @@ const Scene = () => {
       setSceneBusy("character", false);
       visibilityObserver.disconnect();
       setCharTimelineListener(undefined);
-      removeResize?.();
+      removeResize();
+      fitObserver.disconnect();
       killCharTimeline();
       progress.dispose();
       scene.clear();

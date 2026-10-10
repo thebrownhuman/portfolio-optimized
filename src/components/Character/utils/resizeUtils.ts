@@ -6,7 +6,7 @@ export default function handleResize(
   renderer: THREE.WebGLRenderer,
   camera: THREE.PerspectiveCamera,
   canvasDiv: React.RefObject<HTMLDivElement>,
-  character: THREE.Object3D
+  character: THREE.Object3D | null
 ) {
   if (!canvasDiv.current) return;
   let canvas3d = canvasDiv.current.getBoundingClientRect();
@@ -17,7 +17,9 @@ export default function handleResize(
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
 
-  // Rebuild the width-dependent timelines; their contexts revert only their own triggers
+  // Rebuild the width-dependent timelines; their contexts revert only their own triggers.
+  // Before the model loads there is nothing to rebuild: the load builds them at the new size
+  if (!character) return;
   setCharTimeline(character, camera);
   setAllTimeline();
 }
