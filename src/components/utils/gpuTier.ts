@@ -1,3 +1,4 @@
+import { DEBUG, debugParams } from "./debug";
 import { useSyncExternalStore } from "react";
 
 // "low" trades render resolution and post-processing for frame rate on weak GPUs.
@@ -22,7 +23,8 @@ function rendererName(): string {
   }
 }
 
-const param = new URLSearchParams(window.location.search).get("quality");
+// Test override (?quality=high|low), debug builds only
+const param = DEBUG ? debugParams.get("quality") : null;
 const forced = param === "high" || param === "low" ? param : null;
 
 // Why the current tier was picked; shown by the ?debug badge

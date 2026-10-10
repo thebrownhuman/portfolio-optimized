@@ -1,9 +1,12 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { DEBUG, debugParams } from "./debug";
 
 // ?debug only: a timeline of browser events around the reveal, and switches that
 // turn single suspects off, for finding an intro stall on a real phone
-const params = new URLSearchParams(window.location.search);
-const on = params.has("debug");
+const params = debugParams;
+// DEBUG first: a constant false in production builds, so all of this is dropped
+export const debugOn = DEBUG && params.has("debug");
+const on = debugOn;
 
 // e.g. ?debug&noglow — each one removes a single suspect
 export const debugFlag = (

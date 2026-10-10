@@ -1,6 +1,9 @@
+import { DEBUG } from "./debug";
+
 // Named timing spans (performance.measure) around startup work, so the ?debug
 // badge can say which one overlaps a long frame on a real device
 export function span<T>(name: string, work: () => T): T {
+  if (!DEBUG) return work();
   const start = performance.now();
   try {
     return work();

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLoading } from "../context/LoadingProvider";
-import { getNavSummary, probeTimeline, recentResizeEvents } from "./utils/debugProbe";
+import { debugOn, getNavSummary, probeTimeline, recentResizeEvents } from "./utils/debugProbe";
 import { getGpuTierReason, gpuRenderer, useGpuTier } from "./utils/gpuTier";
 
-const show = new URLSearchParams(window.location.search).has("debug");
+const show = debugOn;
 const INTRO_MS = 3000;
 
 // Frame intervals for the first 3s after the loader reveals the page

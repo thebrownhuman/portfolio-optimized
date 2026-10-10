@@ -2,13 +2,14 @@ import { SplitText } from "gsap/SplitText";
 import gsap from "gsap";
 import { setScrollPaused } from "../Navbar";
 import { prefersReducedMotion } from "./reducedMotion";
+import { DEBUG, debugParams } from "./debug";
 
 // Reduced motion: the intro tweens jump to their end state
 const t = (seconds: number) => (prefersReducedMotion ? 0 : seconds);
 
 // ?fx=noblur: test switch for checking whether the per-character blur is what
 // stutters the intro on a given device (paired with the ?debug frame readout)
-const noBlur = new URLSearchParams(window.location.search).get("fx") === "noblur";
+const noBlur = DEBUG && debugParams.get("fx") === "noblur";
 const blur = (px: number) => (noBlur ? "none" : `blur(${px}px)`);
 
 // The intro text work (6 SplitText passes, ~60 char tweens, the word loops)

@@ -4,7 +4,8 @@ import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
 import { span } from "../utils/perfSpan";
-import { debugDprCap, probe } from "../utils/debugProbe";
+import { debugDprCap, debugOn, probe } from "../utils/debugProbe";
+import { DEBUG } from "../utils/debug";
 import handleResize from "./utils/resizeUtils";
 import {
   WORK_IMAGES,
@@ -85,9 +86,7 @@ const Scene = () => {
 
     const clock = new THREE.Clock();
     // ?debug: canvas render times and the intro clip's time at each render
-    const debugRenders: Array<[number, number, number]> | null = new URLSearchParams(
-      window.location.search
-    ).has("debug")
+    const debugRenders: Array<[number, number, number]> | null = debugOn
       ? []
       : null;
     if (debugRenders) {
@@ -180,12 +179,14 @@ const Scene = () => {
       scene.add(character);
       loadedCharacter = character;
       headBone = character.getObjectByName("spine006") || null;
-      // Exposed for the resize regression check: the scroll-driven pose
-      const r = (n: number) => Math.round(n * 1000) / 1000;
-      (window as Window & { __charPose?: () => number[] }).__charPose = () => [
-        r(camera.position.x), r(camera.position.y), r(camera.position.z),
-        r(character.rotation.x), r(character.rotation.y),
-      ];
+      // Exposed for the resize regression check (debug builds): the scroll-driven pose
+      if (DEBUG) {
+        const r = (n: number) => Math.round(n * 1000) / 1000;
+        (window as Window & { __charPose?: () => number[] }).__charPose = () => [
+          r(camera.position.x), r(camera.position.y), r(camera.position.z),
+          r(character.rotation.x), r(character.rotation.y),
+        ];
+      }
       screenLight = (character.getObjectByName("screenlight") as StandardMesh | undefined) ?? null;
       progress.loaded().then(() => {
         if (disposed) return;

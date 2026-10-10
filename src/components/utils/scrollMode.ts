@@ -1,5 +1,6 @@
 import { prefersReducedMotion } from "./reducedMotion";
 import { coarsePointer } from "./pointer";
+import { DEBUG, debugParams } from "./debug";
 
 // Dev/test switch for comparing scroll feel: ?scroll=original|current|light|native|normalize|hybrid.
 // Without the param the site uses "original": the first site's ScrollSmoother feel,
@@ -7,7 +8,8 @@ import { coarsePointer } from "./pointer";
 const MODES = ["original", "current", "light", "native", "normalize", "hybrid"] as const;
 export type ScrollMode = (typeof MODES)[number];
 
-const param = new URLSearchParams(window.location.search).get("scroll");
+// Test switch, debug builds only
+const param = DEBUG ? debugParams.get("scroll") : null;
 
 export const scrollMode: ScrollMode = (MODES as readonly string[]).includes(param ?? "")
   ? (param as ScrollMode)
