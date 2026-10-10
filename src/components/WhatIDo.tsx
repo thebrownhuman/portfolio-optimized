@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import "./styles/WhatIDo.css";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import onDebouncedResize from "./utils/debouncedResize";
 
 const WhatIDo = () => {
   const containerRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -38,30 +39,33 @@ const WhatIDo = () => {
       });
     }
 
-    // Mobile: reveal .what-box-in with fade + trigger sub-animations
-    const isMobile = window.innerWidth <= 1024;
+    // Mobile (<= 1024px): reveal .what-box-in with fade + trigger sub-animations.
+    // Checked per call, not once at mount: an iPad window resized across 1024px
+    // must still get the reveal (the desktop layout shows the box via GSAP instead)
     const boxIn = boxInRef.current;
     let revealed = false;
 
     const checkReveal = () => {
-      if (revealed || !boxIn) return;
+      if (revealed || !boxIn || window.innerWidth > 1024) return;
       const rect = boxIn.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
+      // Also when already scrolled past (a resize below 1024px further down the page)
+      if (rect.top < window.innerHeight * 0.85) {
         revealed = true;
         boxIn.style.transition = "opacity 0.6s ease";
         boxIn.style.opacity = "1";
         setTimeout(() => boxIn.classList.add("revealed"), 100);
         window.removeEventListener("scroll", checkReveal, true);
+        removeResize();
       }
     };
 
-    if (isMobile && boxIn) {
-      window.addEventListener("scroll", checkReveal, true);
-      checkReveal();
-    }
+    window.addEventListener("scroll", checkReveal, true);
+    const removeResize = onDebouncedResize(checkReveal);
+    checkReveal();
 
     return () => {
       window.removeEventListener("scroll", checkReveal, true);
+      removeResize();
       // Remove with the exact same function references
       clickHandlers.forEach(({ el, handler }) => {
         el.removeEventListener("click", handler);

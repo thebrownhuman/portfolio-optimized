@@ -11,12 +11,25 @@ interface ParaElement extends HTMLElement {
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother, SplitText);
 
+function revertSplit(el: ParaElement) {
+  if (!el.anim) return;
+  el.anim.progress(1).kill();
+  el.split?.revert();
+  el.anim = el.split = undefined;
+  el.classList.remove("visible");
+}
+
 export default function setSplitText() {
   ScrollTrigger.config({ ignoreMobileResize: true });
-  // Reduced motion: leave titles and paragraphs as plain, already-visible text
-  if (window.innerWidth < 900 || prefersReducedMotion) return;
   const paras: NodeListOf<ParaElement> = document.querySelectorAll(".para");
   const titles: NodeListOf<ParaElement> = document.querySelectorAll(".title");
+  // Reduced motion: leave titles and paragraphs as plain, already-visible text.
+  // A resize below 900px must undo the splits made at a wider size: their lines
+  // were broken for the old width and keep the section taller than a fresh load
+  if (window.innerWidth < 900 || prefersReducedMotion) {
+    [...paras, ...titles].forEach(revertSplit);
+    return;
+  }
 
   const TriggerStart = window.innerWidth <= 1024 ? "top 60%" : "20% 60%";
   const ToggleAction = "play pause resume reverse";
