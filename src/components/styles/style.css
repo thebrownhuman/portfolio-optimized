@@ -14,7 +14,12 @@
   top: 100%;
   left: 0;
 }
-.hover-link:hover .hover-in {
-  transform: translateY(-100%);
-  color: var(--accentColor);
+/* Real hover only: on iOS a tap applies :hover first, and WebKit holds the click
+   until a hover transition it started has finished, so the link turned teal
+   and the nav jump waited ~0.3s before it began */
+@media (hover: hover) and (pointer: fine) {
+  .hover-link:hover .hover-in {
+    transform: translateY(-100%);
+    color: var(--accentColor);
+  }
 }
