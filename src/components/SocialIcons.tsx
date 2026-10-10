@@ -10,6 +10,9 @@ import { useEffect } from "react";
 import HoverLinks from "./HoverLinks";
 import { prefersReducedMotion } from "./utils/reducedMotion";
 
+// No resume PDF yet: to bring the button back, add public/resume.pdf and set this to true
+const SHOW_RESUME = false;
+
 const SocialIcons = () => {
   useEffect(() => {
     // The icons drift toward the pointer; skip that entirely for reduced motion
@@ -118,18 +121,20 @@ const SocialIcons = () => {
           </a>
         </span>
       </div>
-      <a
-        className="resume-button"
-        href="/resume.pdf"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Resume (PDF, opens in new tab)"
-      >
-        <HoverLinks text="RESUME" />
-        <span>
-          <TbNotes />
-        </span>
-      </a>
+      {SHOW_RESUME && (
+        <a
+          className="resume-button"
+          href="/resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Resume (PDF, opens in new tab)"
+        >
+          <HoverLinks text="RESUME" />
+          <span>
+            <TbNotes />
+          </span>
+        </a>
+      )}
     </div>
   );
 };
