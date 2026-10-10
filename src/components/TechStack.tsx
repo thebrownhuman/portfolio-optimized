@@ -6,7 +6,6 @@ import { suspend } from "suspend-react";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import { loadEnvMap } from "./utils/envMap";
 import { setSceneBusy, useGpuTier } from "./utils/gpuTier";
-import { coarsePointer } from "./utils/pointer";
 import {
   BallCollider,
   Physics,
@@ -207,7 +206,7 @@ const TechStack = () => {
       <Canvas
         shadows={highTier}
         frameloop={isActive ? "always" : "demand"}
-        dpr={tier === "low" ? 1 : [1, coarsePointer ? 1.5 : 2]}
+        dpr={tier === "low" ? 1 : [1, 2]}
         gl={{ alpha: true, stencil: false, depth: false, antialias: false }}
         camera={{ position: [0, 0, 20], fov: 32.5, near: 1, far: 100 }}
         onCreated={(state) => (state.gl.toneMappingExposure = 1.5)}

@@ -5,7 +5,6 @@ import setLighting from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
 import { span } from "../utils/perfSpan";
 import { debugDprCap } from "../utils/debugProbe";
-import { coarsePointer } from "../utils/pointer";
 import handleResize from "./utils/resizeUtils";
 import {
   WORK_IMAGES,
@@ -62,10 +61,7 @@ const Scene = () => {
       antialias: getGpuTier() === "high",
     });
     renderer.setSize(container.width, container.height);
-    // Phones/tablets: 1.5x. At 2x on an iPhone's 3x screen the canvas had ~78% more
-    // pixels and the GPU stalled for ~230ms during the intro (1.5x measured smooth)
-    const maxPixelRatio = () =>
-      debugDprCap ?? (getGpuTier() === "high" ? (coarsePointer ? 1.5 : 2) : 1);
+    const maxPixelRatio = () => debugDprCap ?? (getGpuTier() === "high" ? 2 : 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));
     const removeTierListener = onGpuTierChange(() => {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));
