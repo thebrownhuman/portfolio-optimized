@@ -111,3 +111,27 @@
     font-size: calc(var(--wideScale) * 20 / 1300);
   }
 }
+
+.error-fallback {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: #0a0e17;
+  color: #eae5ec;
+  font-size: 18px;
+  z-index: 9999999999;
+}
+
+.error-fallback button {
+  padding: 12px 32px;
+  border: 1px solid #2dd4bf;
+  border-radius: 100px;
+  background: transparent;
+  color: #2dd4bf;
+  font: inherit;
+  cursor: pointer;
+}
