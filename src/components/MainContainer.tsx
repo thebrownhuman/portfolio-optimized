@@ -8,6 +8,7 @@ import Navbar from "./Navbar";
 import SocialIcons from "./SocialIcons";
 import WhatIDo from "./WhatIDo";
 import Work from "./Work";
+import TechStackLite from "./TechStackLite";
 import setSplitText from "./utils/splitText";
 import onDebouncedResize from "./utils/debouncedResize";
 
@@ -44,10 +45,12 @@ const MainContainer = ({ children }: PropsWithChildren) => {
             <WhatIDo />
             <Career />
             <Work />
-            {isDesktopView && (
+            {isDesktopView ? (
               <Suspense fallback={<div>Loading....</div>}>
                 <TechStack />
               </Suspense>
+            ) : (
+              <TechStackLite />
             )}
             <Contact />
           </div>
