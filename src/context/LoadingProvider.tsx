@@ -2,6 +2,7 @@ import {
   createContext,
   PropsWithChildren,
   useContext,
+  useEffect,
   useState,
 } from "react";
 import Loading from "../components/Loading";
@@ -16,11 +17,22 @@ interface LoadingType {
   setLoading: (percent: number) => void;
 }
 
+// The loader fades out over the page's own fade-in (.main-active, 1s), so the
+// view goes loader -> site without a black frame between them (iOS Safari)
+const LOADER_FADE_MS = 1000;
+
 const LoadingContext = createContext<LoadingType | null>(null);
 
 export const LoadingProvider = ({ children }: PropsWithChildren) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(0);
+  const [loaderGone, setLoaderGone] = useState(false);
+
+  useEffect(() => {
+    if (isLoading || keepLoader) return;
+    const t = setTimeout(() => setLoaderGone(true), LOADER_FADE_MS);
+    return () => clearTimeout(t);
+  }, [isLoading]);
 
   const value = {
     isLoading,
@@ -34,7 +46,7 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
           <Loading percent={loading} />
         </div>
       ) : (
-        isLoading && <Loading percent={loading} />
+        !loaderGone && <Loading percent={loading} fading={!isLoading} />
       )}
       <main className="main-body">{children}</main>
     </LoadingContext.Provider>

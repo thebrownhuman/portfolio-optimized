@@ -7,7 +7,7 @@ import { useLoading } from "../context/LoadingProvider";
 import Marquee from "react-fast-marquee";
 import { prefersReducedMotion } from "./utils/reducedMotion";
 
-const Loading = ({ percent }: { percent: number }) => {
+const Loading = ({ percent, fading = false }: { percent: number; fading?: boolean }) => {
   const { setIsLoading } = useLoading();
   const [loaded, setLoaded] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -111,7 +111,7 @@ const Loading = ({ percent }: { percent: number }) => {
 
   return (
     <>
-      <div className="loading-header">
+      <div className={`loading-header ${fading ? "loading-fade" : ""}`}>
         <a href="/#" className="loader-title" data-cursor="disable">
           SM
         </a>
@@ -126,7 +126,7 @@ const Loading = ({ percent }: { percent: number }) => {
           </div>
         </div>
       </div>
-      <div className="loading-screen">
+      <div className={`loading-screen ${fading ? "loading-fade" : ""}`}>
         <div className="loading-marquee">
           <Marquee play={!prefersReducedMotion}>
             <span> Software Engineer</span> <span>Problem Solver</span>

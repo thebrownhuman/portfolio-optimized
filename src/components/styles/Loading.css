@@ -10,6 +10,13 @@
   justify-content: center;
 }
 
+/* After the reveal: fade out while the page fades in under it (LoadingProvider) */
+.loading-fade {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+
 .loading-button {
   padding: 20px 50px;
   border-radius: 100px;
