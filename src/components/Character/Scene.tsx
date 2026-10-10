@@ -5,6 +5,12 @@ import setLighting from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
 import handleResize from "./utils/resizeUtils";
 import {
+  WORK_IMAGES,
+  WORK_IMAGE_SIZES,
+  workImageSrc,
+  workImageSrcSet,
+} from "../utils/workImages";
+import {
   handleMouseMove,
   handleTouchEnd,
   handleHeadRotation,
@@ -90,16 +96,13 @@ const Scene = () => {
     // Warm the cache for the Work carousel images (their slides sit off-screen
     // sideways, so lazy loading alone would pop them in on "next")
     const preloadImages = () => {
-      [
-        "/images/Solidx.webp",
-        "/images/radix.webp",
-        "/images/bond.webp",
-        "/images/sapphire.webp",
-        "/images/Maxlife.webp",
-      ].forEach((src) => {
+      // Same srcset/sizes as the slides, so the browser fetches the file they will use
+      WORK_IMAGES.forEach((name) => {
         const img = new Image();
         img.decoding = "async";
-        img.src = src;
+        img.sizes = WORK_IMAGE_SIZES;
+        img.srcset = workImageSrcSet(name);
+        img.src = workImageSrc(name);
       });
     };
 

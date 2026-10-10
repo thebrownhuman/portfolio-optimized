@@ -231,6 +231,10 @@
 }
 
 .work-image img {
+  /* Size from the image as before; the width/height attributes only give the
+     aspect ratio so the slide's space is reserved before the file loads */
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 400px;
   border-radius: 8px;

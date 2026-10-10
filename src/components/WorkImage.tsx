@@ -1,6 +1,14 @@
 import { MdArrowOutward } from "react-icons/md";
+import {
+  WORK_IMAGE_HEIGHT,
+  WORK_IMAGE_SIZES,
+  WORK_IMAGE_WIDTH,
+  workImageSrc,
+  workImageSrcSet,
+} from "./utils/workImages";
 
 interface Props {
+  // Base name of a screenshot in /images, e.g. "bond" (see utils/workImages)
   image: string;
   alt?: string;
   link?: string;
@@ -20,7 +28,16 @@ const WorkImage = (props: Props) => {
             <MdArrowOutward />
           </div>
         )}
-        <img src={props.image} alt={props.alt ? `Screenshot of ${props.alt}` : ""} loading="lazy" decoding="async" />
+        <img
+          src={workImageSrc(props.image)}
+          srcSet={workImageSrcSet(props.image)}
+          sizes={WORK_IMAGE_SIZES}
+          width={WORK_IMAGE_WIDTH}
+          height={WORK_IMAGE_HEIGHT}
+          alt={props.alt ? `Screenshot of ${props.alt}` : ""}
+          loading="lazy"
+          decoding="async"
+        />
       </Wrapper>
     </div>
   );
