@@ -9,6 +9,7 @@ import SocialIcons from "./SocialIcons";
 import WhatIDo from "./WhatIDo";
 import Work from "./Work";
 import TechStackLite from "./TechStackLite";
+import { span } from "./utils/perfSpan";
 import setSplitText from "./utils/splitText";
 import onDebouncedResize from "./utils/debouncedResize";
 
@@ -21,7 +22,7 @@ const MainContainer = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const resizeHandler = () => {
-      setSplitText();
+      span("setSplitText", setSplitText);
       setIsDesktopView(window.innerWidth > 1024);
     };
     resizeHandler();

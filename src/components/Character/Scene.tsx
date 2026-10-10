@@ -3,6 +3,7 @@ import * as THREE from "three";
 import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
+import { span } from "../utils/perfSpan";
 import handleResize from "./utils/resizeUtils";
 import {
   WORK_IMAGES,
@@ -82,6 +83,16 @@ const Scene = () => {
     let disposed = false;
 
     const clock = new THREE.Clock();
+    // ?debug: canvas render times and the intro clip's time at each render
+    const debugRenders: Array<[number, number]> | null = new URLSearchParams(
+      window.location.search
+    ).has("debug")
+      ? []
+      : null;
+    if (debugRenders) {
+      (window as Window & { __charRenders?: typeof debugRenders }).__charRenders = debugRenders;
+    }
+    let introAction: THREE.AnimationAction | null = null;
 
     // Render on demand: full rate while something changes, otherwise only the
     // looping idle clips (typing, keys, blink, screen flicker) need frames
@@ -115,11 +126,13 @@ const Scene = () => {
       // Timelines are module-wide: a disposed mount (StrictMode's first one) whose
       // load finishes last must not rebind them to its own camera/character
       if (disposed || !gltf) return;
-      setCharTimeline(gltf.scene, camera);
-      setAllTimeline();
+      span("setCharTimeline", () => setCharTimeline(gltf.scene, camera));
+      span("setAllTimeline", setAllTimeline);
       const animations = setAnimations(gltf);
       if (hoverDivRef.current) animations.hover(gltf, hoverDivRef.current);
       mixer = animations.mixer;
+      const introClip = gltf.animations.find((clip) => clip.name === "introAnimation");
+      introAction = introClip ? mixer.existingAction(introClip) : null;
       const character = gltf.scene;
       scene.add(character);
       headBone = character.getObjectByName("spine006") || null;
@@ -143,7 +156,7 @@ const Scene = () => {
         introRef.current.start = () => {
           introRef.current.start = undefined;
           if (disposed) return;
-          wake(animations.startIntro() + 500);
+          wake(span("startIntro", animations.startIntro) + 500);
         };
         if (introRef.current.revealed) introRef.current.start();
       });
@@ -238,6 +251,9 @@ const Scene = () => {
         mixer.update(delta);
       }
       renderer.render(scene, camera);
+      if (debugRenders && debugRenders.length < 2000) {
+        debugRenders.push([now, introAction?.time ?? -1]);
+      }
     };
     animate();
     return () => {

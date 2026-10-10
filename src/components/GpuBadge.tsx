@@ -11,22 +11,55 @@ function useIntroFrames(start: boolean) {
   useEffect(() => {
     if (!show || !start) return;
     const frames: number[] = [];
+    let worst = { at: 0, dt: 0 };
     let first = 0;
     let last = 0;
     let raf = 0;
     const tick = (now: number) => {
       if (!first) first = now;
-      else frames.push(now - last);
+      else {
+        frames.push(now - last);
+        if (now - last > worst.dt) worst = { at: now, dt: now - last };
+      }
       last = now;
       if (now - first < INTRO_MS) {
         raf = requestAnimationFrame(tick);
         return;
       }
-      const sorted = [...frames].sort((a, b) => a - b);
-      const at = (q: number) => sorted[Math.floor((sorted.length - 1) * q)].toFixed(1);
+      const stats = (list: number[]) => {
+        const sorted = [...list].sort((a, b) => a - b);
+        const at = (q: number) => (sorted[Math.floor((sorted.length - 1) * q)] ?? 0).toFixed(1);
+        return `p50 ${at(0.5)} p95 ${at(0.95)} max ${at(1)}ms`;
+      };
+      // Canvas renders in the same window, and how far the intro clip moved per render
+      const renders = (
+        (window as Window & { __charRenders?: Array<[number, number]> }).__charRenders ?? []
+      ).filter(([t]) => t >= first && t <= now);
+      const gaps: number[] = [];
+      let worstStep = 0;
+      for (let i = 1; i < renders.length; i++) {
+        const dt = renders[i][0] - renders[i - 1][0];
+        gaps.push(dt);
+        // clip seconds advanced vs wall seconds elapsed (1 = in step)
+        if (renders[i][1] >= 0 && renders[i - 1][1] >= 0 && dt > 0) {
+          worstStep = Math.max(worstStep, Math.abs(renders[i][1] - renders[i - 1][1]) * 1000);
+        }
+      }
+      const clip = renders.length ? renders[renders.length - 1][1].toFixed(2) : "-";
+      // The reveal fires just before the first frame we see, so look back a little
+      const spans = performance
+        .getEntriesByType("measure")
+        .filter((m) => m.startTime + m.duration >= first - 300 && m.startTime <= now)
+        .sort((a, b) => b.duration - a.duration)
+        .slice(0, 4)
+        .map((m) => `${m.name} ${m.duration.toFixed(0)}`)
+        .join(", ");
       setSummary(
-        `intro 3s: ${frames.length} frames, p50 ${at(0.5)} p95 ${at(0.95)} max ${at(1)}ms, ` +
-          `>20ms ${frames.filter((f) => f > 20).length}, >50ms ${frames.filter((f) => f > 50).length}`
+        `intro 3s: page ${frames.length} frames ${stats(frames)}, >20ms ${frames.filter((f) => f > 20).length}` +
+          ` | canvas ${renders.length} renders ${stats(gaps)}, >20ms ${gaps.filter((g) => g > 20).length}` +
+          ` | clip t ${clip}s, max step ${worstStep.toFixed(0)}ms` +
+          ` | worst frame ${worst.dt.toFixed(0)}ms @${(worst.at - first).toFixed(0)}ms` +
+          ` | spans: ${spans || "none"}`
       );
     };
     raf = requestAnimationFrame(tick);

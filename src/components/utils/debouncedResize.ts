@@ -1,3 +1,4 @@
+import { span } from "./perfSpan";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 type Callback = () => void;
@@ -10,7 +11,7 @@ const onResize = () => {
   timer = window.setTimeout(() => {
     callbacks.forEach((cb) => cb());
     // Recalculate trigger positions once, after every subscriber rebuilt its animations
-    ScrollTrigger.refresh();
+    span("ScrollTrigger.refresh", () => ScrollTrigger.refresh());
   }, 200);
 };
 
