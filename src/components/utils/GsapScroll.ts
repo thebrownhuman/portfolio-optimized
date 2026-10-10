@@ -19,8 +19,53 @@ export function setCharTimeline(
   camera: THREE.PerspectiveCamera
 ) {
   // kill, not revert: keep inline styles set outside this context (e.g. the intro rim glow)
-  charCtx?.kill();
+  if (charCtx) {
+    charCtx.kill();
+    // kill() leaves everything where the old timelines put it, and the rebuilt
+    // .to() tweens would record those values as their start. Go back to the
+    // fresh-load pose first so a rebuild matches a fresh load at any scroll position
+    resetCharPose(character, camera);
+  }
   charCtx = gsap.context(() => buildCharTimeline(character, camera));
+}
+
+type Pose = { x: number; y: number; z: number };
+const basePose = new WeakMap<THREE.Object3D, Pose>();
+const savePose = (obj: THREE.Object3D, v: THREE.Vector3 | THREE.Euler) => {
+  if (!basePose.has(obj)) basePose.set(obj, { x: v.x, y: v.y, z: v.z });
+};
+
+// The values each scroll-driven property has on a fresh load, recorded before any timeline runs
+function saveCharPose(character: THREE.Object3D | null, camera: THREE.PerspectiveCamera) {
+  savePose(camera, camera.position);
+  if (!character) return;
+  savePose(character, character.rotation);
+  const neck = character.getObjectByName("spine005");
+  if (neck) savePose(neck, neck.rotation);
+}
+
+// Inline props the character timelines tween, per element. Only these are
+// cleared: other code writes inline styles on some of these elements too
+const SCROLL_PROPS: Array<[string, string]> = [
+  [".character-model", "transform,opacity,pointerEvents"],
+  [".landing-container", "transform,opacity"],
+  [".about-me", "transform"],
+  [".about-section", "transform,opacity"],
+  [".what-box-in", "display"],
+  [".whatIDO", "transform"],
+];
+
+function resetCharPose(character: THREE.Object3D | null, camera: THREE.PerspectiveCamera) {
+  const cam = basePose.get(camera);
+  if (cam) camera.position.set(cam.x, cam.y, cam.z);
+  if (character) {
+    const rot = basePose.get(character);
+    if (rot) character.rotation.set(rot.x, rot.y, rot.z);
+    const neck = character.getObjectByName("spine005");
+    const neckRot = neck && basePose.get(neck);
+    if (neck && neckRot) neck.rotation.set(neckRot.x, neckRot.y, neckRot.z);
+  }
+  SCROLL_PROPS.forEach(([selector, props]) => gsap.set(selector, { clearProps: props }));
 }
 
 export function killCharTimeline() {
@@ -34,6 +79,7 @@ function buildCharTimeline(
   character: THREE.Object3D<THREE.Object3DEventMap> | null,
   camera: THREE.PerspectiveCamera
 ) {
+  saveCharPose(character, camera);
   let flickerTl: gsap.core.Timeline | undefined;
   // Flicker only while the monitor is on screen: after tl2 starts, before tl3 scrolls it away
   const syncFlicker = () => {

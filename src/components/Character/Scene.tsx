@@ -120,6 +120,12 @@ const Scene = () => {
       const character = gltf.scene;
       scene.add(character);
       headBone = character.getObjectByName("spine006") || null;
+      // Exposed for the resize regression check: the scroll-driven pose
+      const r = (n: number) => Math.round(n * 1000) / 1000;
+      (window as Window & { __charPose?: () => number[] }).__charPose = () => [
+        r(camera.position.x), r(camera.position.y), r(camera.position.z),
+        r(character.rotation.x), r(character.rotation.y),
+      ];
       screenLight = (character.getObjectByName("screenlight") as StandardMesh | undefined) ?? null;
       progress.loaded().then(() => {
         if (disposed) return;
