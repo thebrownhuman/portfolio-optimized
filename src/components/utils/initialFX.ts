@@ -6,6 +6,11 @@ import { prefersReducedMotion } from "./reducedMotion";
 // Reduced motion: the intro tweens jump to their end state
 const t = (seconds: number) => (prefersReducedMotion ? 0 : seconds);
 
+// ?fx=noblur: test switch for checking whether the per-character blur is what
+// stutters the intro on a given device (paired with the ?debug frame readout)
+const noBlur = new URLSearchParams(window.location.search).get("fx") === "noblur";
+const blur = (px: number) => (noBlur ? "none" : `blur(${px}px)`);
+
 export function initialFX() {
   document.body.style.overflowY = "auto";
   setScrollPaused(false);
@@ -25,11 +30,11 @@ export function initialFX() {
   );
   gsap.fromTo(
     landingText.chars,
-    { opacity: 0, y: 80, filter: "blur(5px)" },
+    { opacity: 0, y: 80, filter: blur(5) },
     {
       opacity: 1,
       duration: t(1.2),
-      filter: "blur(0px)",
+      filter: blur(0),
       ease: "power3.inOut",
       y: 0,
       stagger: t(0.025),
@@ -44,11 +49,11 @@ export function initialFX() {
   var landingText2 = new SplitText(".landing-h2-info", TextProps);
   gsap.fromTo(
     landingText2.chars,
-    { opacity: 0, y: 80, filter: "blur(5px)" },
+    { opacity: 0, y: 80, filter: blur(5) },
     {
       opacity: 1,
       duration: t(1.2),
-      filter: "blur(0px)",
+      filter: blur(0),
       ease: "power3.inOut",
       y: 0,
       stagger: t(0.025),
