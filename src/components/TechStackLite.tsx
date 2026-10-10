@@ -24,6 +24,8 @@ const BALLS: Array<[number, number, number]> = [
 const TechStackLite = () => {
   const ref = useRef<HTMLUListElement>(null);
   const [inView, setInView] = useState(false);
+  // Logos load once the section nears the viewport, not with the first page load
+  const [near, setNear] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -36,8 +38,20 @@ const TechStackLite = () => {
       },
       { rootMargin: "0px 0px -15% 0px" }
     );
+    const nearObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setNear(true);
+        nearObserver.disconnect();
+      },
+      { rootMargin: "100% 0px" }
+    );
     observer.observe(el);
-    return () => observer.disconnect();
+    nearObserver.observe(el);
+    return () => {
+      observer.disconnect();
+      nearObserver.disconnect();
+    };
   }, []);
 
   return (
@@ -53,7 +67,7 @@ const TechStackLite = () => {
                 "--size": `${size}px`,
                 "--nudge": `${nudge}px`,
                 "--i": i,
-                backgroundImage: `url(/images/${LOGOS[logo][0]}.webp)`,
+                backgroundImage: near ? `url(/images/${LOGOS[logo][0]}.webp)` : undefined,
               } as React.CSSProperties
             }
           >
