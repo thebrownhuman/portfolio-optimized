@@ -53,7 +53,7 @@ const Scene = () => {
       antialias: getGpuTier() === "high",
     });
     renderer.setSize(container.width, container.height);
-    const maxPixelRatio = () => (getGpuTier() === "high" ? 1.5 : 1);
+    const maxPixelRatio = () => (getGpuTier() === "high" ? 2 : 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));
     const removeTierListener = onGpuTierChange(() => {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio()));

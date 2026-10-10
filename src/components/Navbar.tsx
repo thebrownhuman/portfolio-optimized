@@ -34,7 +34,6 @@ const Navbar = () => {
         wrapper: "#smooth-wrapper",
         content: "#smooth-content",
         ...smootherSettings,
-        effects: false,
         smoothTouch: false,
         autoResize: true,
         ignoreMobileResize: true,

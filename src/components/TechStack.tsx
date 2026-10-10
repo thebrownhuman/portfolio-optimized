@@ -27,9 +27,10 @@ const imageUrls = [
 ];
 const textures = imageUrls.map((url) => textureLoader.load(url));
 
-// Low tier: coarser spheres (the balls are small on screen and textured)
+// High tier keeps the original 28x28 spheres; low tier uses coarser ones
+// (the balls are small on screen and textured)
 const sphereGeometries = {
-  high: new THREE.SphereGeometry(1, 20, 20),
+  high: new THREE.SphereGeometry(1, 28, 28),
   low: new THREE.SphereGeometry(1, 12, 12),
 };
 
@@ -45,6 +46,7 @@ type SphereProps = {
   material: THREE.MeshStandardMaterial;
   geometry: THREE.SphereGeometry;
   isActive: boolean;
+  shadows: boolean;
 };
 
 function SphereGeo({
@@ -54,6 +56,7 @@ function SphereGeo({
   material,
   geometry,
   isActive,
+  shadows,
 }: SphereProps) {
   const api = useRef<RapierRigidBody | null>(null);
 
@@ -91,6 +94,8 @@ function SphereGeo({
         args={[0.15 * scale, 0.275 * scale]}
       />
       <mesh
+        castShadow={shadows}
+        receiveShadow={shadows}
         scale={scale}
         geometry={geometry}
         material={material}
@@ -177,19 +182,20 @@ const TechStack = () => {
       screenObserver.disconnect();
     };
   }, []);
+  // High tier: the original glossy clearcoat look. Low tier: plain standard material
   const materials = useMemo(() => {
-    return textures.map(
-      (texture) =>
-        new THREE.MeshStandardMaterial({
-          map: texture,
-          emissive: "#ffffff",
-          emissiveMap: texture,
-          emissiveIntensity: 0.3,
-          metalness: 0.5,
-          roughness: 1,
-        }),
-    );
+    const base = { emissive: "#ffffff", emissiveIntensity: 0.3, metalness: 0.5, roughness: 1 };
+    return {
+      high: textures.map(
+        (texture) =>
+          new THREE.MeshPhysicalMaterial({ ...base, map: texture, emissiveMap: texture, clearcoat: 0.1 }),
+      ),
+      low: textures.map(
+        (texture) => new THREE.MeshStandardMaterial({ ...base, map: texture, emissiveMap: texture }),
+      ),
+    };
   }, []);
+  const highTier = tier === "high";
 
   return (
     <div className="techstack" ref={containerRef}>
@@ -198,8 +204,9 @@ const TechStack = () => {
       {/* Mounted eagerly so wasm/shader/HDR init happens behind the loader;
           "demand" renders once to compile, then idles while off-screen */}
       <Canvas
+        shadows={highTier}
         frameloop={isActive ? "always" : "demand"}
-        dpr={tier === "low" ? 1 : [1, 1.5]}
+        dpr={tier === "low" ? 1 : [1, 2]}
         gl={{ alpha: true, stencil: false, depth: false, antialias: false }}
         camera={{ position: [0, 0, 20], fov: 32.5, near: 1, far: 100 }}
         onCreated={(state) => (state.gl.toneMappingExposure = 1.5)}
@@ -212,6 +219,8 @@ const TechStack = () => {
           penumbra={1}
           angle={0.2}
           color="white"
+          castShadow={highTier}
+          shadow-mapSize={[512, 512]}
         />
         <directionalLight position={[0, 5, -4]} intensity={2} />
         <Physics gravity={[0, 0, 0]} paused={!isActive}>
@@ -220,9 +229,10 @@ const TechStack = () => {
             <SphereGeo
               key={i}
               {...props}
-              material={materials[props.materialIndex]}
+              material={materials[tier][props.materialIndex]}
               geometry={sphereGeometries[tier]}
               isActive={isActive}
+              shadows={highTier}
             />
           ))}
         </Physics>
@@ -230,7 +240,7 @@ const TechStack = () => {
         <Preload all />
         {isActive && !onScreen && <SkipRender />}
         {/* N8AO is several full-screen passes: the main GPU cost on weak GPUs */}
-        {!isMobile && tier === "high" && (
+        {!isMobile && highTier && (
           <EffectComposer enableNormalPass={false} enabled={onScreen}>
             <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
           </EffectComposer>
