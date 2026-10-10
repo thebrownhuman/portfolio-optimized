@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLoading } from "../context/LoadingProvider";
-import { probeTimeline } from "./utils/debugProbe";
+import { probeTimeline, recentResizeEvents } from "./utils/debugProbe";
 import { getGpuTierReason, gpuRenderer, useGpuTier } from "./utils/gpuTier";
 
 const show = new URLSearchParams(window.location.search).has("debug");
@@ -76,11 +76,20 @@ const GpuBadge = () => {
   const tier = useGpuTier();
   const { isLoading } = useLoading();
   const intro = useIntroFrames(!isLoading);
+  // Re-render twice a second so the canvas size and resize log stay live
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!show) return;
+    const id = window.setInterval(() => setTick((t) => t + 1), 500);
+    return () => clearInterval(id);
+  }, []);
   if (!show) return null;
+  const canvas = document.querySelector<HTMLCanvasElement>(".character-model canvas");
   return (
     <div className="scroll-mode-badge gpu-badge" aria-hidden="true">
       GPU: {tier} (reason: {getGpuTierReason()}) {gpuRenderer || "unknown renderer"} | dpr{" "}
-      {window.devicePixelRatio} canvas {document.querySelector(".character-model canvas")?.getAttribute("width") ?? "?"}px
+      {window.devicePixelRatio} canvas {canvas?.getAttribute("width") ?? "?"}px ({canvas?.style.width ?? "?"} css)
+      | window {window.innerWidth}x{window.innerHeight} | resizes: {recentResizeEvents() || "none"}
       | {intro}
     </div>
   );

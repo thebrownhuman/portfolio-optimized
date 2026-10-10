@@ -22,9 +22,27 @@ export function probe(name: string) {
   const now = performance.now();
   if (name === "reveal") revealAt = now;
   if (events.length < 300) events.push([now, name]);
+  // Resize events are kept past the cap (oldest dropped) for the live badge line
+  else if (RESIZE_EVENT.test(name)) {
+    const i = events.findIndex(([, n]) => RESIZE_EVENT.test(n));
+    if (i >= 0) events.splice(i, 1);
+    events.push([now, name]);
+  }
 }
 
 export const getRevealAt = () => revealAt;
+
+// The last few resize-related events at any time (relative to the reveal), for
+// checking window resizes on a device after the intro window has passed
+const RESIZE_EVENT = /resize|setSize|canvas fit/;
+export function recentResizeEvents(count = 6) {
+  const start = revealAt ?? 0;
+  return events
+    .filter(([, name]) => RESIZE_EVENT.test(name))
+    .slice(-count)
+    .map(([t, name]) => `+${Math.round(t - start)} ${name}`)
+    .join(", ");
+}
 
 // Events from 100ms before the reveal to `windowMs` after, as "+590 name"
 export function probeTimeline(windowMs: number) {
