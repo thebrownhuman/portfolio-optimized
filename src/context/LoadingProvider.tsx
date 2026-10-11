@@ -8,6 +8,11 @@ import {
 import Loading from "../components/Loading";
 import { debugFlag } from "../components/utils/debugProbe";
 import { skipIntro } from "../components/utils/introSkip";
+import { live3D } from "../components/utils/deviceTier";
+
+// The loader only waits for the 3D scene: without it (a returning visit in
+// this tab, or the poster tier in deviceTier.ts) the page opens directly
+const directReveal = skipIntro || !live3D;
 
 // The home page always opens at the top (the intro starts there; the #section
 // links jump themselves), never where the browser last left it
@@ -36,7 +41,7 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
   // Returning visit (introSkip.ts): no loader; reveal as soon as the landing is
   // mounted. The character rises in on its own once its model has loaded
   useEffect(() => {
-    if (!skipIntro) return;
+    if (!directReveal) return;
     let cancelled = false;
     let tries = 0;
     const reveal = async () => {
@@ -87,13 +92,13 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
           <Loading percent={loading} />
         </div>
       ) : (
-        !skipIntro && !loaderGone && <Loading percent={loading} fading={!isLoading} />
+        !directReveal && !loaderGone && <Loading percent={loading} fading={!isLoading} />
       )}
       {/* Without the loader on top, the page stays hidden until it is revealed
           (otherwise the landing would show, then jump to the #section) */}
       {/* The class never changes in React: initialFX adds main-active itself, and a
           re-render with a new className would wipe it */}
-      <main className={skipIntro ? "main-body main-pending" : "main-body"}>
+      <main className={directReveal ? "main-body main-pending" : "main-body"}>
         {children}
       </main>
     </LoadingContext.Provider>

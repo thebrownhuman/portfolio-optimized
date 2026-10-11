@@ -5,6 +5,9 @@ import { timelineScrub } from "./scrollMode";
 let charCtx: gsap.Context | undefined;
 let allCtx: gsap.Context | undefined;
 let onCharTimelineUpdate: (() => void) | undefined;
+// The poster tier (deviceTier.ts) has no model: the timelines run on stand-ins,
+// whose missing bones and meshes are expected
+let posterMode = false;
 
 export type StandardMesh = THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
 
@@ -27,6 +30,36 @@ export function setCharTimeline(
     resetCharPose(character, camera);
   }
   charCtx = gsap.context(() => buildCharTimeline(character, camera));
+}
+
+// Poster tier: the same scroll timelines (the DOM half: landing fade, About,
+// the What I Do boxes, the model frame sliding away) on a stand-in camera and
+// character, so the page scrolls exactly as with the 3D model
+export function setPosterTimelines() {
+  posterMode = true;
+  // The camera's distance drives the poster's scale (--poster-zoom), so the
+  // poster shrinks away like the model as the camera pulls back at What I Do
+  const BASE_Z = 24.7;
+  let z = BASE_Z;
+  const position = {
+    x: 0,
+    y: 13.1,
+    get z() {
+      return z;
+    },
+    set z(value: number) {
+      z = value;
+      document.querySelector<HTMLElement>(".character-model")?.style.setProperty("--poster-zoom", String(BASE_Z / z));
+    },
+  };
+  const camera = { position } as unknown as THREE.PerspectiveCamera;
+  const character = {
+    rotation: { x: 0, y: 0, z: 0 },
+    children: [],
+    getObjectByName: () => undefined,
+  } as unknown as THREE.Object3D;
+  setCharTimeline(character, camera);
+  setAllTimeline();
 }
 
 type Pose = { x: number; y: number; z: number };
@@ -190,14 +223,14 @@ function buildCharTimeline(
 
       // Skip (don't throw) if a re-exported model renames these nodes
       if (neckBone) tl2.to(neckBone.rotation, { x: 0.6, delay: 2, duration: 3 }, 0);
-      else console.warn('GsapScroll: "spine005" not found, skipping neck tween');
+      else if (!posterMode) console.warn('GsapScroll: "spine005" not found, skipping neck tween');
       if (monitor) {
         tl2
           .to(monitor.material, { opacity: 1, duration: 0.8, delay: 3.2 }, 0)
           .fromTo(monitor.position, { y: -10, z: 2 }, { y: 0, z: 0, delay: 1.5, duration: 3 }, 0);
-      } else console.warn('GsapScroll: monitor mesh not found, skipping monitor tweens');
+      } else if (!posterMode) console.warn('GsapScroll: monitor mesh not found, skipping monitor tweens');
       if (screenLight) tl2.to(screenLight.material, { opacity: 1, duration: 0.8, delay: 4.5 }, 0);
-      else console.warn('GsapScroll: "screenlight" not found, skipping screen light tween');
+      else if (!posterMode) console.warn('GsapScroll: "screenlight" not found, skipping screen light tween');
 
       tl3
         .fromTo(

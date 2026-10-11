@@ -27,9 +27,9 @@ const setLighting = (scene: THREE.Scene) => {
       pointLight.intensity = 0;
     }
   }
-  const duration = 2;
   const ease = "power2.inOut";
-  function turnOnLights() {
+  // duration 0: straight to the lit state (the poster handoff)
+  function turnOnLights(duration = 2) {
     gsap.to(scene, {
       environmentIntensity: 0.64,
       duration: duration,
@@ -43,8 +43,8 @@ const setLighting = (scene: THREE.Scene) => {
     gsap.to(".character-rim", {
       y: "55%",
       opacity: 1,
-      delay: 0.2,
-      duration: 2,
+      delay: duration ? 0.2 : 0,
+      duration: duration,
     });
   }
 

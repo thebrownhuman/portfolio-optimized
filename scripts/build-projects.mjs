@@ -44,6 +44,17 @@ const collect = (key) => {
 };
 collect("index.html");
 ["src/components/MainContainer.tsx", "src/components/utils/initialFX.ts"].forEach(collect);
+// The home page's lazy shell (page sections + the character stage) is only
+// discovered once the entry has run: preload it from index.html instead
+const shellFiles = new Set();
+const collectShell = (key) => {
+  const chunk = manifest[key];
+  if (!chunk || shellFiles.has(chunk.file)) return;
+  shellFiles.add(chunk.file);
+  chunk.css?.forEach((css) => shellFiles.add(css));
+  chunk.imports?.forEach(collectShell);
+};
+["src/components/MainContainer.tsx", "src/components/Character/CharacterStage.tsx"].forEach(collectShell);
 rmSync(manifestDir, { recursive: true, force: true });
 
 // Inline a page's render-blocking CSS: it is small (home ~11KB raw, projects
@@ -55,7 +66,16 @@ const inlineCss = (html) =>
     (_, file) => `<style>${readFileSync(join(dist, file), "utf8").trim()}</style>`
   );
 const homeFile = join(dist, "index.html");
-writeFileSync(homeFile, inlineCss(readFileSync(homeFile, "utf8")));
+const homeHtml = inlineCss(readFileSync(homeFile, "utf8"));
+const shellPreloads = [...shellFiles]
+  .filter((file) => !homeHtml.includes(`/${file}"`))
+  .map((file) =>
+    file.endsWith(".css")
+      ? `<link rel="preload" as="style" href="/${file}">`
+      : `<link rel="modulepreload" crossorigin href="/${file}">`
+  )
+  .join("\n  ");
+writeFileSync(homeFile, homeHtml.replace("</head>", `  ${shellPreloads}\n</head>`));
 
 let template = inlineCss(readFileSync(templateFile, "utf8"));
 

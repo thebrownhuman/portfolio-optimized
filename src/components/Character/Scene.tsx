@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import * as THREE from "three";
 import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
@@ -31,9 +31,17 @@ import {
 import onDebouncedResize from "../utils/debouncedResize";
 import { getGpuTier, onGpuTierChange, setSceneBusy } from "../utils/gpuTier";
 
-const Scene = () => {
-  const canvasDiv = useRef<HTMLDivElement | null>(null);
-  const hoverDivRef = useRef<HTMLDivElement>(null);
+type Props = {
+  // CharacterStage's elements: the canvas goes into canvasDiv
+  canvasDiv: RefObject<HTMLDivElement>;
+  hoverDiv: RefObject<HTMLDivElement>;
+  // The poster is on screen in the landing pose: skip the intro, light up at
+  // once, and call onReady after the first frame so the poster can crossfade
+  handoff: boolean;
+  onReady: () => void;
+};
+
+const Scene = ({ canvasDiv, hoverDiv: hoverDivRef, handoff, onReady }: Props) => {
   const sceneRef = useRef(new THREE.Scene());
   const { setLoading, isLoading } = useLoading();
   // The intro (rise from below) starts as the page is revealed. It used to start,
@@ -41,10 +49,10 @@ const Scene = () => {
   // loader's exit but left a dark, unlit character on screen once it got faster
   const introRef = useRef<{ revealed: boolean; start?: () => void }>({ revealed: false });
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || handoff) return;
     introRef.current.revealed = true;
     introRef.current.start?.();
-  }, [isLoading]);
+  }, [isLoading, handoff]);
 
   useEffect(() => {
     const currentDiv = canvasDiv.current;
@@ -83,6 +91,7 @@ const Scene = () => {
     let mixer: THREE.AnimationMixer;
     let animFrameId: number;
     let disposed = false;
+    let readyPending = false;
 
     const clock = new THREE.Clock();
     // ?debug: canvas render times and the intro clip's time at each render
@@ -179,6 +188,27 @@ const Scene = () => {
       scene.add(character);
       loadedCharacter = character;
       headBone = character.getObjectByName("spine006") || null;
+      // Debug builds: render the current frame into a square transparent PNG
+      // (the source of the landing poster, public/images/character-poster-*)
+      if (DEBUG) {
+        (window as Window & { __charSnapshot?: (size: number) => string }).__charSnapshot = (size) => {
+          const prevSize = renderer.getSize(new THREE.Vector2());
+          const prevRatio = renderer.getPixelRatio();
+          const prevAspect = camera.aspect;
+          renderer.setPixelRatio(1);
+          renderer.setSize(size, size, false);
+          camera.aspect = 1;
+          camera.updateProjectionMatrix();
+          renderer.render(scene, camera);
+          const url = renderer.domElement.toDataURL("image/png");
+          renderer.setPixelRatio(prevRatio);
+          renderer.setSize(prevSize.x, prevSize.y, false);
+          camera.aspect = prevAspect;
+          camera.updateProjectionMatrix();
+          wake(100);
+          return url;
+        };
+      }
       // Exposed for the resize regression check (debug builds): the scroll-driven pose
       if (DEBUG) {
         const r = (n: number) => Math.round(n * 1000) / 1000;
@@ -195,6 +225,15 @@ const Scene = () => {
         // Light him up behind the loader (held on the intro's first frame), so the
         // page opens on a lit, already-drawn character; this also moves the first
         // render's GPU uploads off the first visible frame
+        if (handoff) {
+          // Same pose as the poster: intro done, lights on, then crossfade
+          light.turnOnLights(0);
+          animations.finishIntro();
+          headFollow = true;
+          readyPending = true;
+          wake(1000);
+          return;
+        }
         light.turnOnLights();
         // Lights tween for 2s (+0.2s delay)
         wake(2700);
@@ -292,6 +331,10 @@ const Scene = () => {
         mixer.update(delta);
       }
       renderer.render(scene, camera);
+      if (readyPending) {
+        readyPending = false;
+        onReady();
+      }
       if (debugRenders && debugRenders.length < 2000) {
         // Head pitch in degrees (+ up): the intro starts at about -78, the rest pose is about -6
         let pitch = NaN;
@@ -328,16 +371,7 @@ const Scene = () => {
     };
   }, []);
 
-  return (
-    <>
-      <div className="character-container" aria-hidden="true">
-        <div className="character-model" ref={canvasDiv}>
-          <div className="character-rim"></div>
-          <div className="character-hover" ref={hoverDivRef}></div>
-        </div>
-      </div>
-    </>
-  );
+  return null;
 };
 
 export default Scene;

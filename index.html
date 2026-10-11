@@ -139,6 +139,11 @@
   }
   </script>
   <link rel="preload" href="/fonts/geist-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
+  <!-- The landing poster (CharacterStage): the first frame of the character
+       where the page opens without the loader, and the LCP image there -->
+  <link rel="preload" as="image" type="image/avif"
+    imagesrcset="/images/character-poster-560.avif 560w, /images/character-poster-840.avif 840w, /images/character-poster-1120.avif 1120w, /images/character-poster-1680.avif 1680w"
+    imagesizes="(min-width: 1025px) calc(min(100vh, 1080px) * 0.9333), calc(80vh * 0.9333)" />
 </head>
 
 <body>
