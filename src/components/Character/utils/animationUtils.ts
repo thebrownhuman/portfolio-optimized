@@ -55,18 +55,6 @@ const setAnimations = (gltf: GLTF) => {
     }, 2500);
     return Math.max((introClip?.duration ?? 0) * 1000, 3000);
   }
-  // The intro's end state at once (the poster handoff): risen, idle, blinking
-  function finishIntro() {
-    const introClip = gltf.animations.find((clip) => clip.name === "introAnimation");
-    if (introClip) {
-      const introAction = mixer.clipAction(introClip);
-      introAction.paused = false;
-      introAction.time = introClip.duration;
-      mixer.update(0);
-    }
-    const blink = gltf.animations.find((clip) => clip.name === "Blink");
-    if (blink) mixer.clipAction(blink).play();
-  }
   function hover(gltf: GLTF, hoverDiv: HTMLDivElement) {
     const eyeBrowUpAction = createBoneAction(
       gltf,
@@ -103,7 +91,7 @@ const setAnimations = (gltf: GLTF) => {
       hoverDiv.removeEventListener("mouseleave", onLeaveFace);
     };
   }
-  return { mixer, startIntro, finishIntro, hover };
+  return { mixer, startIntro, hover };
 };
 
 const createBoneAction = (

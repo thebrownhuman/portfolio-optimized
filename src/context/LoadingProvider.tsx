@@ -9,6 +9,7 @@ import Loading from "../components/Loading";
 import { debugFlag } from "../components/utils/debugProbe";
 import { skipIntro } from "../components/utils/introSkip";
 import { live3D } from "../components/utils/deviceTier";
+import { characterReady } from "../components/utils/characterReady";
 
 // The loader only waits for the 3D scene: without it (a returning visit in
 // this tab, or the poster tier in deviceTier.ts) the page opens directly
@@ -66,7 +67,11 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
         }
         setIsLoading(false);
       };
-      document.fonts.ready.then(ready);
+      // The model is cached by now; cap the wait so a slow load never holds the page
+      const character = live3D
+        ? Promise.race([characterReady, new Promise((r) => setTimeout(r, 1500))])
+        : null;
+      Promise.all([document.fonts.ready, character]).then(ready);
     };
     reveal();
     return () => {

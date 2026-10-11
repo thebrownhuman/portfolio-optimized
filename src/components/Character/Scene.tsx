@@ -6,6 +6,8 @@ import { useLoading } from "../../context/LoadingProvider";
 import { span } from "../utils/perfSpan";
 import { debugDprCap, debugOn, probe } from "../utils/debugProbe";
 import { DEBUG } from "../utils/debug";
+import { skipIntro } from "../utils/introSkip";
+import { markCharacterReady } from "../utils/characterReady";
 import handleResize from "./utils/resizeUtils";
 import {
   WORK_IMAGES,
@@ -35,13 +37,12 @@ type Props = {
   // CharacterStage's elements: the canvas goes into canvasDiv
   canvasDiv: RefObject<HTMLDivElement>;
   hoverDiv: RefObject<HTMLDivElement>;
-  // The poster is on screen in the landing pose: skip the intro, light up at
-  // once, and call onReady after the first frame so the poster can crossfade
-  handoff: boolean;
-  onReady: () => void;
 };
 
-const Scene = ({ canvasDiv, hoverDiv: hoverDivRef, handoff, onReady }: Props) => {
+// Intro clip time (s) after which no bone moves more than ~1 degree
+const INTRO_SETTLED_S = 1.45;
+
+const Scene = ({ canvasDiv, hoverDiv: hoverDivRef }: Props) => {
   const sceneRef = useRef(new THREE.Scene());
   const { setLoading, isLoading } = useLoading();
   // The intro (rise from below) starts as the page is revealed. It used to start,
@@ -49,10 +50,10 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef, handoff, onReady }: Props) =>
   // loader's exit but left a dark, unlit character on screen once it got faster
   const introRef = useRef<{ revealed: boolean; start?: () => void }>({ revealed: false });
   useEffect(() => {
-    if (isLoading || handoff) return;
+    if (isLoading) return;
     introRef.current.revealed = true;
     introRef.current.start?.();
-  }, [isLoading, handoff]);
+  }, [isLoading]);
 
   useEffect(() => {
     const currentDiv = canvasDiv.current;
@@ -91,7 +92,6 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef, handoff, onReady }: Props) =>
     let mixer: THREE.AnimationMixer;
     let animFrameId: number;
     let disposed = false;
-    let readyPending = false;
 
     const clock = new THREE.Clock();
     // ?debug: canvas render times and the intro clip's time at each render
@@ -225,16 +225,9 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef, handoff, onReady }: Props) =>
         // Light him up behind the loader (held on the intro's first frame), so the
         // page opens on a lit, already-drawn character; this also moves the first
         // render's GPU uploads off the first visible frame
-        if (handoff) {
-          // Same pose as the poster: intro done, lights on, then crossfade
-          light.turnOnLights(0);
-          animations.finishIntro();
-          headFollow = true;
-          readyPending = true;
-          wake(1000);
-          return;
-        }
-        light.turnOnLights();
+        // Returning visit (no loader): the model is already lit as it rises
+        light.turnOnLights(skipIntro ? 0 : undefined);
+        markCharacterReady();
         // Lights tween for 2s (+0.2s delay)
         wake(2700);
         introRef.current.start = () => {
@@ -247,6 +240,7 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef, handoff, onReady }: Props) =>
     }).catch((error) => {
       // Without this the loader waits at ~92% forever; open the site without the character
       console.error("Character failed to load", error);
+      markCharacterReady();
       if (!disposed) progress.loaded();
     });
 
@@ -326,15 +320,17 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef, handoff, onReady }: Props) =>
         }
       }
       if (headBone && screenLight) light.setPointLight(screenLight);
+      // The intro's pose is final once the head is up (~1.4s of its 3.3s clip):
+      // end it there, so the head follows the pointer at once instead of
+      // holding still, then turning to it as a second move
+      if (introAction?.isRunning() && introAction.time >= INTRO_SETTLED_S) {
+        introAction.time = introAction.getClip().duration;
+      }
       const delta = clock.getDelta();
       if (mixer) {
         mixer.update(delta);
       }
       renderer.render(scene, camera);
-      if (readyPending) {
-        readyPending = false;
-        onReady();
-      }
       if (debugRenders && debugRenders.length < 2000) {
         // Head pitch in degrees (+ up): the intro starts at about -78, the rest pose is about -6
         let pitch = NaN;

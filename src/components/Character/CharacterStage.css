@@ -15,20 +15,15 @@
   transition: opacity 0.6s ease;
 }
 
-/* The 3D intro's rise, without the hands: transform only, so the poster
-   counts as painted from its first frame */
 @media (prefers-reduced-motion: no-preference) {
   .character-poster {
-    animation: character-poster-rise 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: character-poster-in 0.8s ease both;
   }
 }
 
-@keyframes character-poster-rise {
+@keyframes character-poster-in {
   from {
-    transform: translate(-50%, 35%);
-  }
-  to {
-    transform: translateX(-50%);
+    opacity: 0;
   }
 }
 
@@ -40,21 +35,8 @@
   pointer-events: none;
 }
 
-/* While the poster shows: the rim glow in its lit state (what the scene's
-   lights tween it to), and the canvas hidden until it has drawn the same pose */
+/* Poster tier: the rim glow in its lit state (what the scene's lights tween it to) */
 .poster-on .character-rim {
   opacity: 1;
   transform: translate(-50%, 55%) scale(1.4);
-}
-
-.character-model canvas {
-  transition: opacity 0.6s ease;
-}
-
-.poster-on:not(.poster-fading) canvas {
-  opacity: 0;
-}
-
-.poster-fading .character-poster {
-  opacity: 0;
 }

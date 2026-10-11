@@ -19,17 +19,20 @@ const posterSet = (ext: string) =>
 const POSTER_SIZES = "(min-width: 1025px) calc(min(100vh, 1080px) * 0.9333), calc(80vh * 0.9333)";
 
 // What the landing shows:
-// - live3D, first visit: the loader waits for the 3D scene, which plays its
-//   intro at the reveal (as before); the poster is never shown
-// - live3D, returning in the same tab (no loader): the poster rises in at once,
-//   then crossfades to the 3D scene in the same pose once it has drawn
-// - poster tier (deviceTier.ts): no loader; the poster rises in and stays
+// - live3D: the 3D scene, with its real intro (the head raise) at the reveal:
+//   behind the loader on a first visit, at once when returning in the same tab
+//   (no loader; the model comes from the cache). The poster is never shown
+// - poster tier (deviceTier.ts): no loader; the poster fades in and stays
+
+// Desktop starts the scene at once: the pointer should move the head within a
+// second of the reveal. Touch screens on a first visit wait for the page to
+// settle (the loader is up meanwhile), which keeps mobile vitals as they were
+const startNow = skipIntro || matchMedia("(hover: hover) and (pointer: fine)").matches;
+
 const CharacterStage = () => {
   const canvasDiv = useRef<HTMLDivElement>(null);
   const hoverDiv = useRef<HTMLDivElement>(null);
-  const posterFirst = !live3D || skipIntro;
-  const [poster, setPoster] = useState<"on" | "fading" | "off">(posterFirst ? "on" : "off");
-  const [startScene, setStartScene] = useState(false);
+  const [startScene, setStartScene] = useState(live3D && startNow);
 
   useEffect(() => {
     if (!live3D) {
@@ -37,6 +40,7 @@ const CharacterStage = () => {
       setPosterTimelines();
       return onDebouncedResize(setPosterTimelines);
     }
+    if (startNow) return;
     let cancelled = false;
     afterIdle().then(() => !cancelled && setStartScene(true));
     return () => {
@@ -44,23 +48,11 @@ const CharacterStage = () => {
     };
   }, []);
 
-  // The scene has drawn its first frame in the poster's pose: crossfade
-  const onSceneReady = () => {
-    setPoster((p) => (p === "on" ? "fading" : p));
-  };
-  useEffect(() => {
-    if (poster !== "fading") return;
-    const t = setTimeout(() => setPoster("off"), 700);
-    return () => clearTimeout(t);
-  }, [poster]);
-
   return (
     <>
       <div className="character-container" aria-hidden="true">
         <div
-          className={`character-model${poster !== "off" ? " poster-on" : ""}${
-            poster === "fading" ? " poster-fading" : ""
-          }`}
+          className={`character-model${live3D ? "" : " poster-on"}`}
           ref={canvasDiv}
         >
           {/* Clipped to the model's box: below it the glow is covered anyway (the
@@ -70,7 +62,7 @@ const CharacterStage = () => {
             <div className="character-rim"></div>
           </div>
           <div className="character-hover" ref={hoverDiv}></div>
-          {poster !== "off" && (
+          {!live3D && (
             <picture>
               <source type="image/avif" srcSet={posterSet("avif")} sizes={POSTER_SIZES} />
               <img
@@ -91,12 +83,7 @@ const CharacterStage = () => {
       </div>
       {startScene && (
         <Suspense fallback={null}>
-          <Scene
-            canvasDiv={canvasDiv}
-            hoverDiv={hoverDiv}
-            handoff={posterFirst}
-            onReady={onSceneReady}
-          />
+          <Scene canvasDiv={canvasDiv} hoverDiv={hoverDiv} />
         </Suspense>
       )}
     </>

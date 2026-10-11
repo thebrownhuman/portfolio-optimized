@@ -4,7 +4,7 @@
 export function afterIdle(timeout = 2000): Promise<void> {
   return new Promise((resolve) => {
     let done = false;
-    const inputs = ["pointerdown", "keydown", "touchstart", "wheel"];
+    const inputs = ["pointerdown", "pointermove", "keydown", "touchstart", "wheel"];
     const finish = () => {
       if (done) return;
       done = true;
