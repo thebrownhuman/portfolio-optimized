@@ -111,3 +111,19 @@ for (const path of paths) {
 rmSync(templateFile);
 rmSync(ssrOut, { recursive: true, force: true });
 console.log(`build-projects: prerendered ${paths.join(", ")}`);
+
+// Guard: a model checked out without Git LFS is a ~130-byte pointer file, and
+// the site would ship it as the 3D character. Fail the build instead
+const { readdirSync, statSync } = await import("node:fs");
+const walk = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]
+  );
+const broken = walk(dist).filter((file) => {
+  if (!/\.(glb|hdr)$/i.test(file)) return false;
+  const head = readFileSync(file).subarray(0, 32).toString("latin1");
+  return statSync(file).size < 1024 || head.startsWith("version https://git-lfs");
+});
+if (broken.length) {
+  throw new Error(`build: Git LFS pointer instead of a model (run git lfs pull): ${broken.join(", ")}`);
+}
