@@ -5,9 +5,6 @@ const ProjectsIndex = () => (
   <>
     <section className="pj-hero section-container">
       <div className="pj-hero-in">
-        <p className="pj-kicker">
-          Selected work <span aria-hidden="true">/</span> {pad(projects.length)} projects
-        </p>
         <h1 className="pj-title">
           All <span>Projects</span>
         </h1>
@@ -22,7 +19,7 @@ const ProjectsIndex = () => (
       {projects.map((p, i) => (
         <li className="pj-item" key={p.slug} data-reveal>
           <a className="pj-card" href={`/projects/${p.slug}`}>
-            <div className="pj-media">
+            <div className="pj-media" data-cursor="disable">
               <img
                 src={`/images/${p.image}-1600.webp`}
                 srcSet={imageSrcSet(p.image)}

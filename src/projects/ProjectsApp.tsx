@@ -8,6 +8,7 @@ import HoverLinks from "../components/HoverLinks";
 import Contact from "../components/Contact";
 import { smootherSettings, usesSmoother } from "../components/utils/scrollMode";
 import { prefersReducedMotion } from "../components/utils/reducedMotion";
+import { forgetIntroPlayed } from "../components/utils/introSkip";
 import { Route } from "./data";
 import ProjectsIndex from "./ProjectsIndex";
 import ProjectDetail from "./ProjectDetail";
@@ -34,17 +35,18 @@ const ProjectsApp = ({ route }: { route: Route }) => {
       });
     }
 
-    // In-page nav links (CONTACT) scroll like the home page; the rest are page loads
+    // In-page nav links (CONTACT, and PROJECTS on /projects itself: "top")
+    // scroll like the home page; the rest are page loads
     const links = [...document.querySelectorAll<HTMLAnchorElement>(".header ul a[data-href]")];
     const onClick = (e: Event) => {
       const target = (e.currentTarget as HTMLElement).getAttribute("data-href")!;
       e.preventDefault();
-      if (smoother) smoother.scrollTo(target, true, "top top");
-      else
-        document.querySelector(target)?.scrollIntoView({
-          behavior: prefersReducedMotion ? "auto" : "smooth",
-          block: "start",
-        });
+      const behavior = prefersReducedMotion ? "auto" : "smooth";
+      if (target === "top") {
+        if (smoother) smoother.scrollTo(0, true);
+        else window.scrollTo({ top: 0, behavior });
+      } else if (smoother) smoother.scrollTo(target, true, "top top");
+      else document.querySelector(target)?.scrollIntoView({ behavior, block: "start" });
     };
     links.forEach((a) => a.addEventListener("click", onClick));
 
@@ -87,27 +89,26 @@ const ProjectsApp = ({ route }: { route: Route }) => {
       </a>
       <Cursor />
       <div className="header">
-        <a href="/" className="navbar-title" data-cursor="disable">
-          SM
-        </a>
         <a href="mailto:thebrownhuman@gmail.com" className="navbar-connect" data-cursor="disable">
           thebrownhuman@gmail.com
         </a>
         <ul>
           <li>
-            <a href="/#about">
-              <HoverLinks text="ABOUT" />
+            {/* A fresh start: home from the top, with the intro */}
+            <a href="/" onClick={forgetIntroPlayed}>
+              <HoverLinks text="PORTFOLIO" />
             </a>
           </li>
           <li>
-            <a href="/#work">
-              <HoverLinks text="WORK" />
-            </a>
-          </li>
-          <li>
-            <a href="/projects" aria-current={route.kind === "index" ? "page" : undefined}>
-              <HoverLinks text="PROJECTS" />
-            </a>
+            {route.kind === "index" ? (
+              <a href="/projects" data-href="top" aria-current="page">
+                <HoverLinks text="PROJECTS" />
+              </a>
+            ) : (
+              <a href="/projects">
+                <HoverLinks text="PROJECTS" />
+              </a>
+            )}
           </li>
           <li>
             <a data-href="#contact" href="#contact">

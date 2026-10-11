@@ -9,6 +9,10 @@ import Loading from "../components/Loading";
 import { debugFlag } from "../components/utils/debugProbe";
 import { skipIntro } from "../components/utils/introSkip";
 
+// The home page always opens at the top (the intro starts there; the #section
+// links jump themselves), never where the browser last left it
+history.scrollRestoration = "manual";
+
 // ?debug&norelease: keep the loader mounted (hidden) after the reveal
 const keepLoader = debugFlag("norelease");
 

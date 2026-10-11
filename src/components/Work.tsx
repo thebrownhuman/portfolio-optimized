@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import "./styles/Work.css";
 import WorkImage from "./WorkImage";
-import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
+import { MdArrowBack, MdArrowForward } from "react-icons/md";
 // Shared with scripts/build-projects.mjs, which prerenders /projects pages from it
 import projects from "../data/projects.json";
 
@@ -123,7 +123,7 @@ const Work = () => {
         </div>
 
         <a href="/projects" className="work-all-link" data-cursor="disable">
-          All projects <MdArrowOutward aria-hidden="true" />
+          See all projects <MdArrowForward aria-hidden="true" />
         </a>
       </div>
     </div>

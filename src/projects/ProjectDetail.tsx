@@ -20,7 +20,7 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
         </div>
       </section>
 
-      <figure className="pd-shot section-container" data-reveal>
+      <figure className="pd-shot section-container" data-reveal data-cursor="disable">
         <img
           src={`/images/${p.image}-1600.webp`}
           srcSet={imageSrcSet(p.image)}
@@ -61,7 +61,7 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
       </section>
 
       <nav className="pd-more section-container" aria-label="More projects" data-reveal>
-        <a className="pd-more-link" href={`/projects/${prev.slug}`}>
+        <a className="pd-more-link" href={`/projects/${prev.slug}`} data-cursor="disable">
           <span className="pd-more-dir">
             <MdArrowBack aria-hidden="true" /> Previous
           </span>
@@ -76,7 +76,11 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
             decoding="async"
           />
         </a>
-        <a className="pd-more-link pd-more-next" href={`/projects/${next.slug}`}>
+        <a
+          className="pd-more-link pd-more-next"
+          href={`/projects/${next.slug}`}
+          data-cursor="disable"
+        >
           <span className="pd-more-dir">
             Next <MdArrowForward aria-hidden="true" />
           </span>
