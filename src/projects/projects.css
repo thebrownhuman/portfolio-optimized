@@ -1,0 +1,467 @@
+/* /projects pages. Same frame and tokens as the home page (index.css, App.css,
+   Navbar.css, Landing.css glows); only the project content is styled here. */
+
+/* No intro to wait for: the page scrolls from the start, and the nav fade that
+   the home page brings in on scroll is always on */
+body {
+  overflow-y: auto;
+}
+
+.pj-page .nav-fade {
+  opacity: 1;
+}
+
+#pj-content:focus {
+  outline: none;
+}
+
+/* ── Hero ── */
+.pj-hero {
+  margin: 0 auto;
+  padding: 190px 0 90px;
+  position: relative;
+  z-index: 1;
+}
+
+.pj-kicker {
+  margin: 0 0 22px;
+  font-size: 15px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--accentColor);
+}
+
+.pj-kicker span {
+  margin: 0 6px;
+  opacity: 0.6;
+}
+
+.pj-title {
+  margin: 0;
+  font-size: clamp(56px, 9vw, 150px);
+  line-height: 0.95;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.pj-title span {
+  color: var(--accentColor);
+  font-weight: 400;
+}
+
+.pj-lead {
+  max-width: 620px;
+  margin: 34px 0 0;
+  font-size: clamp(18px, 1.5vw, 24px);
+  font-weight: 300;
+  line-height: 1.5;
+  color: #cfcbd2;
+}
+
+/* ── Index: one big case-study row per project, image sides alternating ── */
+.pj-list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0 0 80px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(90px, 9vw, 160px);
+}
+
+.pj-card {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+  gap: clamp(36px, 5vw, 90px);
+}
+
+.pj-item:nth-child(even) .pj-media {
+  order: 2;
+}
+
+.pj-media {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* Teal glow that rises from the bottom of the image on hover */
+.pj-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(94, 234, 212, 0.28), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.pj-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1600 / 873;
+  object-fit: cover;
+  transform: scale(1.001);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.pj-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.pj-num {
+  font-size: clamp(70px, 8vw, 140px);
+  line-height: 0.9;
+  font-weight: 600;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(94, 234, 212, 0.55);
+  margin-bottom: 18px;
+  transition: color 0.5s ease;
+}
+
+.pj-name {
+  margin: 0;
+  font-size: clamp(36px, 4vw, 68px);
+  line-height: 1;
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: color 0.4s ease;
+}
+
+.pj-category {
+  margin: 14px 0 26px;
+  font-size: clamp(16px, 1.3vw, 21px);
+  font-weight: 300;
+  color: #adacac;
+}
+
+.pj-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pj-chips li {
+  padding: 7px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 100px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: #eae5ec;
+}
+
+.pj-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 34px;
+  padding-bottom: 6px;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  transition: color 0.4s ease, border-color 0.4s ease, gap 0.4s ease;
+}
+
+.pj-card:hover {
+  color: inherit;
+}
+
+.pj-card:hover .pj-media,
+.pj-card:focus-visible .pj-media {
+  border-color: rgba(94, 234, 212, 0.45);
+  box-shadow: 0 30px 90px -30px rgba(94, 234, 212, 0.35);
+}
+
+.pj-card:hover .pj-media::after,
+.pj-card:focus-visible .pj-media::after {
+  opacity: 1;
+}
+
+.pj-card:hover .pj-media img,
+.pj-card:focus-visible .pj-media img {
+  transform: scale(1.05);
+}
+
+.pj-card:hover .pj-num,
+.pj-card:focus-visible .pj-num {
+  color: rgba(94, 234, 212, 0.12);
+}
+
+.pj-card:hover .pj-name,
+.pj-card:hover .pj-cta,
+.pj-card:focus-visible .pj-name,
+.pj-card:focus-visible .pj-cta {
+  color: var(--accentColor);
+}
+
+.pj-card:hover .pj-cta {
+  gap: 14px;
+  border-color: var(--accentColor);
+}
+
+/* The card's ring goes on the image, not around the whole row */
+.pj-card:focus-visible {
+  outline: none;
+}
+
+.pj-card:focus-visible .pj-media {
+  outline: 2px solid var(--accentColor);
+  outline-offset: 4px;
+}
+
+/* ── Project page ── */
+.pd-hero {
+  padding-bottom: 60px;
+}
+
+.pd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 26px;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #cfcbd2;
+  transition: color 0.3s ease, gap 0.3s ease;
+}
+
+.pd-back:hover {
+  gap: 14px;
+}
+
+.pd-category {
+  margin: 24px 0 0;
+  font-size: clamp(20px, 2vw, 32px);
+  font-weight: 300;
+  color: var(--accentColor);
+}
+
+.pd-shot {
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.pd-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1600 / 873;
+  object-fit: cover;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 40px 120px -40px rgba(94, 234, 212, 0.3);
+  background: #111827;
+}
+
+.pd-body {
+  margin: 0 auto;
+  padding: 100px 0 40px;
+  display: grid;
+  gap: 70px;
+}
+
+.pd-label {
+  margin: 0 0 20px;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--accentColor);
+}
+
+.pd-chips li {
+  padding: 10px 22px;
+  font-size: clamp(15px, 1.2vw, 19px);
+}
+
+.pd-overview {
+  max-width: 900px;
+}
+
+.pd-text {
+  margin: 0;
+  font-size: clamp(20px, 1.9vw, 30px);
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.pd-demo {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 28px;
+  border-radius: 100px;
+  background: var(--accentColor);
+  color: #0a0e17;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.pd-demo:hover {
+  color: #0a0e17;
+  filter: brightness(1.1);
+}
+
+/* Previous / next: two big links, the project's image fades in behind on hover */
+.pd-more {
+  margin: 60px auto 120px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pd-more-link {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 56px 40px 56px 0;
+  isolation: isolate;
+}
+
+.pd-more-next {
+  align-items: flex-end;
+  text-align: right;
+  padding: 56px 0 56px 40px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pd-more-dir {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #adacac;
+}
+
+.pd-more-title {
+  font-size: clamp(32px, 4vw, 64px);
+  line-height: 1;
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: color 0.4s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.pd-more-img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 0.6s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Darkened so the title stays readable on top */
+  filter: brightness(0.3);
+}
+
+.pd-more-link:hover .pd-more-img,
+.pd-more-link:focus-visible .pd-more-img {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.pd-more-link:hover .pd-more-title {
+  transform: translateX(10px);
+}
+
+.pd-more-next:hover .pd-more-title {
+  transform: translateX(-10px);
+}
+
+/* The home page's Contact section closes every project page */
+.pj-page .contact-section {
+  margin-top: 40px;
+}
+
+/* ── Smaller screens ── */
+@media only screen and (max-width: 900px) {
+  .pj-hero {
+    padding: 175px 0 60px;
+  }
+
+  .pj-kicker {
+    font-size: 13px;
+    letter-spacing: 4px;
+  }
+
+  .pj-card {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  .pj-item:nth-child(even) .pj-media {
+    order: 0;
+  }
+
+  .pj-num {
+    margin-bottom: 8px;
+  }
+
+  .pj-cta {
+    margin-top: 24px;
+  }
+
+  .pd-body {
+    padding-top: 60px;
+    gap: 44px;
+  }
+
+  .pd-shot img {
+    border-radius: 14px;
+  }
+
+  .pd-more {
+    grid-template-columns: 1fr;
+  }
+
+  .pd-more-link,
+  .pd-more-next {
+    padding: 36px 0;
+  }
+
+  .pd-more-next {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* The home column is only 500px wide up to 900px; these pages are image-led,
+   so tablets and phones get the full width */
+@media only screen and (max-width: 900px) {
+  .pj-page .section-container {
+    width: calc(100% - 40px);
+    max-width: 760px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pj-media img,
+  .pd-more-img,
+  .pd-more-title {
+    transition: none;
+  }
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <style>
+    html { background: #0a0e17; color-scheme: dark; }
+    body { margin: 0; background: #0a0e17; }
+    /* With JS, the parts that animate in start hidden (no flash of the
+       prerendered copy before the reveal); without JS everything shows */
+    @media (prefers-reduced-motion: no-preference) {
+      .js .pj-hero-in > *, .js [data-reveal] { opacity: 0; }
+    }
+  </style>
+  <script>document.documentElement.classList.add("js")</script>
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0a0e17" />
+  <!--head-->
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <link rel="preload" href="/fonts/geist-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+
+<body>
+  <!-- Prerendered per page by scripts/build-projects.mjs, then hydrated -->
+  <div id="root"><!--app--></div>
+  <script type="module" src="/src/projects/main.tsx"></script>
+</body>
+
+</html>

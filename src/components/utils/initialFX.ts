@@ -1,6 +1,6 @@
 import { SplitText } from "gsap/SplitText";
 import gsap from "gsap";
-import { setScrollPaused } from "../Navbar";
+import { scrollToSection, setScrollPaused } from "../Navbar";
 import { prefersReducedMotion } from "./reducedMotion";
 import { DEBUG, debugParams } from "./debug";
 
@@ -114,6 +114,7 @@ export function prepareInitialFX() {
   play = () => {
     document.body.style.overflowY = "auto";
     setScrollPaused(false);
+    scrollToHashSection();
     document.getElementsByTagName("main")[0].classList.add("main-active");
     tweens.forEach((tween) => tween.play());
     // The loops repeat forever; only run them while the landing section is on screen.
@@ -137,7 +138,15 @@ export function initialFX() {
   // No landing to animate: still open the page
   document.body.style.overflowY = "auto";
   setScrollPaused(false);
+  scrollToHashSection();
   document.getElementsByTagName("main")[0]?.classList.add("main-active");
+}
+
+// Links from the /projects pages land on /#about, /#work or /#contact: the page
+// opens at the top for the intro, so go to the section once scrolling unlocks
+function scrollToHashSection() {
+  const hash = window.location.hash;
+  if (["#about", "#work", "#contact"].includes(hash)) scrollToSection(hash);
 }
 
 function LoopText(Text1: SplitText, Text2: SplitText) {

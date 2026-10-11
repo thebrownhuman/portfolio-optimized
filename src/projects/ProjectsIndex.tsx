@@ -1,0 +1,59 @@
+import { MdArrowOutward } from "react-icons/md";
+import { imageSrcSet, pad, projects, toolList } from "./data";
+
+const ProjectsIndex = () => (
+  <>
+    <section className="pj-hero section-container">
+      <div className="pj-hero-in">
+        <p className="pj-kicker">
+          Selected work <span aria-hidden="true">/</span> {pad(projects.length)} projects
+        </p>
+        <h1 className="pj-title">
+          All <span>Projects</span>
+        </h1>
+        <p className="pj-lead">
+          Low-code platforms, e-commerce, import-export automation, CRM and
+          insurance. A closer look at each project from the Work section.
+        </p>
+      </div>
+    </section>
+
+    <ol className="pj-list section-container">
+      {projects.map((p, i) => (
+        <li className="pj-item" key={p.slug} data-reveal>
+          <a className="pj-card" href={`/projects/${p.slug}`}>
+            <div className="pj-media">
+              <img
+                src={`/images/${p.image}-1600.webp`}
+                srcSet={imageSrcSet(p.image)}
+                sizes="(max-width: 900px) 100vw, 60vw"
+                width={1600}
+                height={873}
+                alt={p.title}
+                loading={i < 2 ? "eager" : "lazy"}
+                decoding="async"
+              />
+            </div>
+            <div className="pj-info">
+              <span className="pj-num" aria-hidden="true">
+                {pad(i + 1)}
+              </span>
+              <h2 className="pj-name">{p.title}</h2>
+              <p className="pj-category">{p.category}</p>
+              <ul className="pj-chips" aria-label="Tools">
+                {toolList(p).map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+              <span className="pj-cta">
+                View project <MdArrowOutward aria-hidden="true" />
+              </span>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </>
+);
+
+export default ProjectsIndex;

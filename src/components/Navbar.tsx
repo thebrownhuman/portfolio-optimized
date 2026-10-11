@@ -26,7 +26,7 @@ export function setScrollPaused(paused: boolean) {
   smoother?.paused(paused);
 }
 
-function scrollToSection(section: string) {
+export function scrollToSection(section: string) {
   if (smoother) smoother.scrollTo(section, true, "top top");
   else document.querySelector(section)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
 }

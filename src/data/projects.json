@@ -4,34 +4,39 @@
     "title": "Solid Starters",
     "category": "Low-Code Platform",
     "tools": "Angular, Next.js, NestJS, MongoDB",
-    "image": "Solidx"
+    "image": "Solidx",
+    "description": ""
   },
   {
     "slug": "radix",
     "title": "Radix",
     "category": "E-Commerce",
     "tools": "Angular, Next.js, NestJS, CMS",
-    "image": "radix"
+    "image": "radix",
+    "description": ""
   },
   {
     "slug": "bond-cancellation",
     "title": "Bond Cancellation",
     "category": "Import-Export Automation",
     "tools": "Angular, Next.js, NestJS, Workflows",
-    "image": "bond"
+    "image": "bond",
+    "description": ""
   },
   {
     "slug": "sapphire",
     "title": "Sapphire",
     "category": "CRM Platform",
     "tools": "AngularJS, NestJS, PostgreSQL",
-    "image": "sapphire"
+    "image": "sapphire",
+    "description": ""
   },
   {
     "slug": "mpro",
     "title": "Mpro",
     "category": "Insurance Platform",
     "tools": "React.js, Node.js, Microservices",
-    "image": "Maxlife"
+    "image": "Maxlife",
+    "description": ""
   }
 ]

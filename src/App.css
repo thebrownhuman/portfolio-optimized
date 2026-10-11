@@ -56,10 +56,10 @@
   html .carousel-content {
     gap: calc(var(--wideScale) * 60 / 1300);
   }
-  html .carousel-number h3 {
+  html .carousel-number .carousel-index {
     font-size: calc(var(--wideScale) * 60 / 1300);
   }
-  html .carousel-details h4 {
+  html .carousel-details h3 {
     font-size: calc(var(--wideScale) * 28 / 1300);
   }
   html .carousel-category {
@@ -87,27 +87,27 @@
   html .career-info-box p {
     font-size: calc(var(--wideScale) * 18 / 1300);
   }
-  html .career-info h3 {
+  html .career-info .career-year {
     font-size: calc(var(--wideScale) * 48 / 1300);
     line-height: calc(var(--wideScale) * 45 / 1300);
   }
-  html .career-info h4 {
+  html .career-info h3 {
     font-size: calc(var(--wideScale) * 33 / 1300);
     line-height: calc(var(--wideScale) * 30 / 1300);
   }
-  html .career-info h5 {
+  html .career-info .career-company {
     font-size: calc(var(--wideScale) * 20 / 1300);
   }
-  html .contact-section h3 {
+  html .contact-section h2 {
     font-size: calc(var(--wideScale) * 60 / 1300);
   }
   html a.contact-social {
     font-size: calc(var(--wideScale) * 25 / 1300);
   }
-  html .contact-box h2 {
+  html .contact-box .contact-credit {
     font-size: calc(var(--wideScale) * 23 / 1300);
   }
-  html .contact-box h5 {
+  html .contact-box .contact-year {
     font-size: calc(var(--wideScale) * 20 / 1300);
   }
 }

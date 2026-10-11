@@ -3,9 +3,29 @@ import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Dev server: /projects and /projects/<slug> load the projects entry (in
+    // production they are prerendered files, see scripts/build-projects.mjs)
+    {
+      name: "projects-dev-routes",
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          // (no @types/node in this project, so the request is typed by hand)
+          const r = req as { url?: string };
+          if (r.url && /^\/projects(\/[\w-]*)?\/?(\?|$)/.test(r.url)) r.url = "/projects.html";
+          next();
+        });
+      },
+    },
+  ],
   build: {
     rollupOptions: {
+      // Two pages: the home page and the /projects template
+      input: {
+        main: "index.html",
+        projects: "projects.html",
+      },
       output: {
         // Keep the heavy TechStack-only libraries out of the character's path
         manualChunks(id) {
