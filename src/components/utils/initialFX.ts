@@ -1,6 +1,6 @@
 import { SplitText } from "gsap/SplitText";
 import gsap from "gsap";
-import { scrollToSection, setScrollPaused } from "../Navbar";
+import { setScrollPaused, smoother } from "../Navbar";
 import { prefersReducedMotion } from "./reducedMotion";
 import { DEBUG, debugParams } from "./debug";
 
@@ -146,7 +146,9 @@ export function initialFX() {
 // opens at the top for the intro, so go to the section once scrolling unlocks
 function scrollToHashSection() {
   const hash = window.location.hash;
-  if (["#about", "#work", "#contact"].includes(hash)) scrollToSection(hash);
+  if (!["#about", "#work", "#contact"].includes(hash)) return;
+  if (smoother) smoother.scrollTo(hash, true, "top top");
+  else document.querySelector(hash)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
 }
 
 function LoopText(Text1: SplitText, Text2: SplitText) {
