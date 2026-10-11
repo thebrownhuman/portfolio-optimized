@@ -4,6 +4,10 @@
 // navigation type tells a reload apart from a link.
 const KEY = "introPlayed";
 
+// The page always opens at the top (the intro starts there; the #section
+// links jump themselves), never where the browser last left it
+if (typeof history !== "undefined") history.scrollRestoration = "manual";
+
 export const skipIntro = (() => {
   try {
     if (sessionStorage.getItem(KEY) !== "1") return false;

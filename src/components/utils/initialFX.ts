@@ -147,6 +147,11 @@ export function initialFX() {
 // opens at the top for the intro, so go to the section once scrolling unlocks
 function scrollToHashSection() {
   const hash = window.location.hash;
+  // The hash only says where to land on arrival: drop it from the URL, so a
+  // refresh opens the page at the top instead of at that section again
+  if (hash) history.replaceState(history.state, "", location.pathname + location.search);
+  const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  if (nav?.type === "reload") return;
   if (!["#about", "#work", "#contact"].includes(hash)) return;
   // Jump, don't glide: the visitor asked for this section, not the page above it
   const go = () => {
