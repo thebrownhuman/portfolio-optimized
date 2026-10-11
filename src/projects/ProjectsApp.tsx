@@ -85,6 +85,10 @@ const ProjectsApp = ({ route }: { route: Route }) => {
       </a>
       <Cursor />
       <div className="header">
+        {/* Home from the top, like PORTFOLIO */}
+        <a href="/" className="navbar-title" data-cursor="disable">
+          SM
+        </a>
         <a href="mailto:thebrownhuman@gmail.com" className="navbar-connect" data-cursor="disable">
           thebrownhuman@gmail.com
         </a>

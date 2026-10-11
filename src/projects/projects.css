@@ -11,11 +11,6 @@ body {
   opacity: 1;
 }
 
-/* No SM logo here: the menu keeps to the right (the email is centred on its own) */
-.pj-page .header {
-  justify-content: flex-end;
-}
-
 #pj-content:focus {
   outline: none;
 }
