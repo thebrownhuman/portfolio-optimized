@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { GLTF, GLTFLoader, MeshoptDecoder } from "three-stdlib";
+// Content-hashed by Vite (/assets/character-<hash>.glb): cached for a year as immutable
+import characterUrl from "../../../assets/models/character.glb?url";
 
 const setCharacter = (
   renderer: THREE.WebGLRenderer,
@@ -15,7 +17,7 @@ const setCharacter = (
       try {
         let character: THREE.Object3D;
         loader.load(
-          "/models/character.glb",
+          characterUrl,
           async (gltf) => {
             // Anything throwing in here used to leave the promise pending (the
             // callback's own rejection went nowhere) and the loader waiting

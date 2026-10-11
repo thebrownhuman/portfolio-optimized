@@ -15,15 +15,6 @@ export const skipIntro = (() => {
   }
 })();
 
-// The /projects PORTFOLIO link: a fresh start, intro included
-export function forgetIntroPlayed() {
-  try {
-    sessionStorage.removeItem(KEY);
-  } catch {
-    // Nothing stored either
-  }
-}
-
 export function markIntroPlayed() {
   try {
     sessionStorage.setItem(KEY, "1");

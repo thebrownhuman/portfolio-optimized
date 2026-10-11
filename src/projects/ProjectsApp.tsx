@@ -8,7 +8,6 @@ import HoverLinks from "../components/HoverLinks";
 import Contact from "../components/Contact";
 import { smootherSettings, usesSmoother } from "../components/utils/scrollMode";
 import { prefersReducedMotion } from "../components/utils/reducedMotion";
-import { forgetIntroPlayed } from "../components/utils/introSkip";
 import { Route } from "./data";
 import ProjectsIndex from "./ProjectsIndex";
 import ProjectDetail from "./ProjectDetail";
@@ -94,8 +93,8 @@ const ProjectsApp = ({ route }: { route: Route }) => {
         </a>
         <ul>
           <li>
-            {/* A fresh start: home from the top, with the intro */}
-            <a href="/" onClick={forgetIntroPlayed}>
+            {/* Home from the top; in a tab that has seen the intro, no loader */}
+            <a href="/">
               <HoverLinks text="PORTFOLIO" />
             </a>
           </li>

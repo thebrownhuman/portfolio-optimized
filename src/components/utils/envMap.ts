@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { RGBELoader } from "three-stdlib";
+// Content-hashed by Vite (/assets/char_enviorment-<hash>.hdr): cached for a year as immutable
+import envMapUrl from "../../assets/models/char_enviorment.hdr?url";
 
 let envMap: Promise<THREE.DataTexture | null> | undefined;
 
@@ -9,7 +11,7 @@ let envMap: Promise<THREE.DataTexture | null> | undefined;
 // suspense tree and take the whole page down with it
 export function loadEnvMap() {
   envMap ??= new RGBELoader()
-    .loadAsync("/models/char_enviorment.hdr?v=2")
+    .loadAsync(envMapUrl)
     .then((texture) => {
       texture.mapping = THREE.EquirectangularReflectionMapping;
       return texture;
