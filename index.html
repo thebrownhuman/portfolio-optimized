@@ -52,13 +52,30 @@
     }
   </style>
 
-  <!-- Structured data -->
+  <!-- Structured data. TODO: swap Person.image for a real photo when there is one -->
   <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "@id": "https://shivanshmishra.com/#profile",
+  "url": "https://shivanshmishra.com/",
+  "name": "Shivansh Mishra - Software Engineer at GE HealthCare",
+  "dateModified": "2026-10-12",
+  "inLanguage": "en",
+  "isPartOf": {
+    "@id": "https://shivanshmishra.com/#website"
+  },
+  "mainEntity": {
     "@type": "Person",
     "@id": "https://shivanshmishra.com/#person",
     "name": "Shivansh Mishra",
+    "givenName": "Shivansh",
+    "familyName": "Mishra",
+    "alternateName": [
+      "Shivansh",
+      "thebrownhuman"
+    ],
+    "description": "Shivansh Mishra is a software engineer at GE HealthCare in Bangalore, India, building automation tools and web applications with Python, JavaScript, Java and React.",
     "url": "https://shivanshmishra.com/",
     "image": "https://shivanshmishra.com/images/og-image.jpg",
     "jobTitle": "Software Engineer",
@@ -70,6 +87,16 @@
     "alumniOf": {
       "@type": "CollegeOrUniversity",
       "name": "Kalinga Institute of Industrial Technology (KIIT)"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Bangalore",
+      "addressRegion": "Karnataka",
+      "addressCountry": "IN"
+    },
+    "nationality": {
+      "@type": "Country",
+      "name": "India"
     },
     "email": "mailto:thebrownhuman@gmail.com",
     "sameAs": [
@@ -97,6 +124,7 @@
       "Robotic process automation"
     ]
   }
+}
   </script>
   <script type="application/ld+json">
 {
@@ -122,6 +150,7 @@
     <main class="seo-fallback">
       <h1>Shivansh Mishra</h1>
       <p>Software Engineer at GE HealthCare</p>
+      <p>Shivansh Mishra is a software engineer at GE HealthCare in Bangalore, India, building automation tools and web applications with Python, JavaScript, Java and React.</p>
       <section>
         <h2>About Me</h2>
         <p>Software Engineer at GE HealthCare with a passion for building tools that automate and streamline complex processes. Skilled in Python, JavaScript, Java, and React, with experience spanning network automation, RPA development, and full-stack web applications. Certified in AWS, with a knack for UI design and a continuous drive to explore new technologies.</p>
@@ -153,6 +182,7 @@
           <li>Sapphire: CRM Platform (AngularJS, NestJS, PostgreSQL)</li>
           <li>Mpro: Insurance Platform (React.js, Node.js, Microservices)</li>
         </ul>
+        <p><a href="/projects">All projects</a></p>
       </section>
       <section>
         <h2>Contact</h2>

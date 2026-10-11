@@ -5,20 +5,20 @@ const Contact = () => {
   return (
     <div className="contact-section section-container" id="contact">
       <div className="contact-container">
-        <h3>Contact</h3>
+        <h2>Contact</h2>
         <div className="contact-flex">
           <div className="contact-box">
-            <h4>Email</h4>
+            <h3>Email</h3>
             <p>
               <a href="mailto:thebrownhuman@gmail.com" data-cursor="disable">
                 thebrownhuman@gmail.com
               </a>
             </p>
-            <h4>Education</h4>
+            <h3>Education</h3>
             <p>BTech in Computer Science</p>
           </div>
           <div className="contact-box">
-            <h4>Social</h4>
+            <h3>Social</h3>
             <a
               href="https://github.com/thebrownhuman"
               target="_blank" rel="noopener noreferrer"
@@ -53,12 +53,12 @@ const Contact = () => {
             </a>
           </div>
           <div className="contact-box">
-            <h2>
+            <div className="contact-credit">
               Designed and Developed <br /> by <span>Shivansh Mishra</span>
-            </h2>
-            <h5>
+            </div>
+            <div className="contact-year">
               <MdCopyright /> {new Date().getFullYear()}
-            </h5>
+            </div>
           </div>
         </div>
       </div>

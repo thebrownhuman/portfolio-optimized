@@ -7,7 +7,7 @@
   background-color: var(--backgroundColor);
 }
 
-.contact-section h3 {
+.contact-section h2 {
   font-size: 60px;
   font-weight: 400;
   text-transform: uppercase;
@@ -19,7 +19,8 @@
   justify-content: space-between;
 }
 
-.contact-flex h4 {
+.contact-flex h3 {
+  font-size: 1em;
   font-weight: 500;
   margin: 0;
   opacity: 0.6;
@@ -40,17 +41,18 @@ a.contact-social {
   border-bottom: 1px solid #ccc;
 }
 
-.contact-box h2 {
+.contact-box .contact-credit {
   font-weight: 400;
   font-size: 23px;
   margin: 0;
 }
 
-.contact-box h2>span {
+.contact-box .contact-credit>span {
   color: var(--accentColor);
 }
 
-.contact-box h5 {
+.contact-box .contact-year {
+  margin: 1.67em 0;
   font-size: 20px;
   font-weight: 500;
   line-height: 20px;
@@ -60,11 +62,11 @@ a.contact-social {
 }
 
 @media only screen and (max-width: 1600px) {
-  .contact-section h3 {
+  .contact-section h2 {
     font-size: 50px;
   }
 
-  .contact-box h2 {
+  .contact-box .contact-credit {
     font-size: 20px;
   }
 
@@ -74,11 +76,11 @@ a.contact-social {
 }
 
 @media only screen and (max-width: 1300px) {
-  .contact-section h3 {
+  .contact-section h2 {
     font-size: 40px;
   }
 
-  .contact-box h2 {
+  .contact-box .contact-credit {
     font-size: 18px;
   }
 
@@ -101,7 +103,7 @@ a.contact-social {
     margin-bottom: 0px;
   }
 
-  .contact-flex h4 {
+  .contact-flex h3 {
     margin-top: 20px;
   }
 

@@ -1,40 +1,10 @@
 import { useState, useCallback } from "react";
 import "./styles/Work.css";
 import WorkImage from "./WorkImage";
-import { MdArrowBack, MdArrowForward } from "react-icons/md";
+import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
+// Shared with scripts/build-projects.mjs, which prerenders /projects pages from it
+import projects from "../data/projects.json";
 
-const projects = [
-  {
-    title: "Solid Starters",
-    category: "Low-Code Platform",
-    tools: "Angular, Next.js, NestJS, MongoDB",
-    image: "Solidx",
-  },
-  {
-    title: "Radix",
-    category: "E-Commerce",
-    tools: "Angular, Next.js, NestJS, CMS",
-    image: "radix",
-  },
-  {
-    title: "Bond Cancellation",
-    category: "Import-Export Automation",
-    tools: "Angular, Next.js, NestJS, Workflows",
-    image: "bond",
-  },
-  {
-    title: "Sapphire",
-    category: "CRM Platform",
-    tools: "AngularJS, NestJS, PostgreSQL",
-    image: "sapphire",
-  },
-  {
-    title: "Mpro",
-    category: "Insurance Platform",
-    tools: "React.js, Node.js, Microservices",
-    image: "Maxlife",
-  },
-];
 
 const Work = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -110,10 +80,10 @@ const Work = () => {
                   <div className="carousel-content">
                     <div className="carousel-info">
                       <div className="carousel-number">
-                        <h3>0{index + 1}</h3>
+                        <div className="carousel-index">0{index + 1}</div>
                       </div>
                       <div className="carousel-details">
-                        <h4>{project.title}</h4>
+                        <h3>{project.title}</h3>
                         <p className="carousel-category">
                           {project.category}
                         </p>
@@ -151,6 +121,10 @@ const Work = () => {
             ))}
           </div>
         </div>
+
+        <a href="/projects" className="work-all-link" data-cursor="disable">
+          All projects <MdArrowOutward aria-hidden="true" />
+        </a>
       </div>
     </div>
   );

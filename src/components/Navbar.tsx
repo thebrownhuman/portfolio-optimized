@@ -56,12 +56,12 @@ const Navbar = () => {
       let downAt: number | undefined;
       const onDown = () => (downAt = performance.now());
       const handler = (e: Event) => {
-        e.preventDefault();
         let section = element.getAttribute("data-href");
-        if (section) {
-          traceNavTap(section, downAt);
-          scrollToSection(section);
-        }
+        // Links without data-href (/projects) are real page loads
+        if (!section) return;
+        e.preventDefault();
+        traceNavTap(section, downAt);
+        scrollToSection(section);
       };
       element.addEventListener("click", handler);
       element.addEventListener("pointerdown", onDown, { passive: true });
@@ -107,6 +107,11 @@ const Navbar = () => {
           <li>
             <a data-href="#work" href="#work">
               <HoverLinks text="WORK" />
+            </a>
+          </li>
+          <li>
+            <a href="/projects">
+              <HoverLinks text="PROJECTS" />
             </a>
           </li>
           <li>

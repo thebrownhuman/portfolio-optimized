@@ -35,15 +35,19 @@ export function prepareInitialFX() {
     delay: t(1),
   }));
 
-  var landingText = new SplitText(
-    [".landing-info h3", ".landing-intro h2", ".landing-intro h1"],
-    {
-      type: "chars,lines",
-      linesClass: "split-line",
-    }
-  );
+  var landingText = new SplitText([".landing-intro h2", ".landing-intro h1"], {
+    type: "chars,lines",
+    linesClass: "split-line",
+  });
+  // The kicker's visible copy is already aria-hidden (sr-only copy beside it),
+  // and SplitText's default aria-label isn't allowed on a span
+  const kickerText = new SplitText(".landing-kicker-text", {
+    type: "chars,lines",
+    linesClass: "split-line",
+    aria: "none",
+  });
   add(gsap.fromTo(
-    landingText.chars,
+    [...kickerText.chars, ...landingText.chars],
     { opacity: 0, y: 80, filter: blur(5) },
     {
       opacity: 1,

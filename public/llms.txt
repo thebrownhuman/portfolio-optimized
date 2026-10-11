@@ -1,0 +1,36 @@
+# Shivansh Mishra
+
+> Software Engineer at GE HealthCare in Bangalore, India. Builds automation tools and web applications with Python, JavaScript, Java and React.
+
+- Name: Shivansh Mishra (also "thebrownhuman")
+- Role: Software Engineer, GE HealthCare
+- Location: Bangalore, Karnataka, India
+- Education: BTech in Computer Science, Kalinga Institute of Industrial Technology (KIIT)
+- Email: thebrownhuman@gmail.com
+
+## Bio
+
+Software Engineer at GE HealthCare with a passion for building tools that automate and streamline complex processes. Skilled in Python, JavaScript, Java, and React, with experience spanning network automation, RPA development, and full-stack web applications. Certified in AWS.
+
+## Experience
+
+- Software Engineer, GE HealthCare (now): automation tools and software for healthcare infrastructure; network reliability and operational efficiency.
+- Software Engineer Intern, GE HealthCare (2022): Python Network Health Check tool (config backups, equipment status, health information); FMEA.
+- ARPA Intern, HighRadius (2022): Java automation agents for portal logins and receipt downloading; B2B Invoice Management web app with React and Express.
+
+## Projects
+
+- [Solid Starters](https://shivanshmishra.com/projects/solid-starters): Low-Code Platform. Angular, Next.js, NestJS, MongoDB
+- [Radix](https://shivanshmishra.com/projects/radix): E-Commerce. Angular, Next.js, NestJS, CMS
+- [Bond Cancellation](https://shivanshmishra.com/projects/bond-cancellation): Import-Export Automation. Angular, Next.js, NestJS, Workflows
+- [Sapphire](https://shivanshmishra.com/projects/sapphire): CRM Platform. AngularJS, NestJS, PostgreSQL
+- [Mpro](https://shivanshmishra.com/projects/mpro): Insurance Platform. React.js, Node.js, Microservices
+
+## Links
+
+- [Website](https://shivanshmishra.com/)
+- [All projects](https://shivanshmishra.com/projects)
+- [GitHub](https://github.com/thebrownhuman)
+- [LinkedIn](https://www.linkedin.com/in/thebrownhuman/)
+- [X (Twitter)](https://x.com/thebrownhuman)
+- [Instagram](https://www.instagram.com/thebrownhuman/)

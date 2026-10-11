@@ -15,10 +15,10 @@ const Career = () => {
           <div className="career-info-box">
             <div className="career-info-in">
               <div className="career-role">
-                <h4>ARPA Intern</h4>
-                <h5>HighRadius</h5>
+                <h3>ARPA Intern</h3>
+                <div className="career-company">HighRadius</div>
               </div>
-              <h3>2022</h3>
+              <div className="career-year">2022</div>
             </div>
             <p>
               Implemented Java-based automation agents for portal logins,
@@ -29,10 +29,10 @@ const Career = () => {
           <div className="career-info-box">
             <div className="career-info-in">
               <div className="career-role">
-                <h4>Software Engineer Intern</h4>
-                <h5>GE HealthCare</h5>
+                <h3>Software Engineer Intern</h3>
+                <div className="career-company">GE HealthCare</div>
               </div>
-              <h3>2022</h3>
+              <div className="career-year">2022</div>
             </div>
             <p>
               Developed a Python-based Network Health Check tool, automating
@@ -43,10 +43,10 @@ const Career = () => {
           <div className="career-info-box">
             <div className="career-info-in">
               <div className="career-role">
-                <h4>Software Engineer</h4>
-                <h5>GE HealthCare</h5>
+                <h3>Software Engineer</h3>
+                <div className="career-company">GE HealthCare</div>
               </div>
-              <h3>NOW</h3>
+              <div className="career-year">NOW</div>
             </div>
             <p>
               Building and maintaining automation tools and software solutions

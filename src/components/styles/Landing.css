@@ -197,12 +197,16 @@
   z-index: 9;
 }
 
-.landing-info h3 {
+.landing-info .landing-kicker {
   font-size: 22px;
   letter-spacing: 2px;
   font-weight: 300;
   color: var(--accentColor);
   margin: 0;
+}
+
+.landing-kicker-text {
+  display: block;
 }
 
 .landing-info h2 {
@@ -263,7 +267,7 @@ h2.landing-info-h2 {
     z-index: 0;
   }
 
-  .landing-info h3 {
+  .landing-info .landing-kicker {
     font-size: 18px;
   }
 
@@ -300,7 +304,7 @@ h2.landing-info-h2 {
     line-height: 35px;
   }
 
-  .landing-info h3 {
+  .landing-info .landing-kicker {
     font-size: 25px;
   }
 
@@ -374,7 +378,7 @@ h2.landing-info-h2 {
     line-height: 55px;
   }
 
-  .landing-info h3 {
+  .landing-info .landing-kicker {
     font-size: 35px;
   }
 

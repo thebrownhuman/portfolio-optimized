@@ -64,12 +64,13 @@
   align-items: flex-start;
 }
 
-.carousel-number h3 {
+.carousel-number .carousel-index {
   font-size: 60px;
   line-height: 1;
   margin: 0;
   font-weight: 600;
-  opacity: 0.3;
+  /* 0.55: >= 4.5:1 on the page background (0.3 failed contrast) */
+  opacity: 0.55;
 }
 
 .carousel-details {
@@ -78,7 +79,7 @@
   gap: 8px;
 }
 
-.carousel-details h4 {
+.carousel-details h3 {
   font-size: 28px;
   font-weight: 500;
   margin: 0;
@@ -157,11 +158,12 @@
 .carousel-dots {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 14px;
   margin-top: 35px;
 }
 
 .carousel-dot {
+  position: relative;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -170,6 +172,14 @@
   cursor: pointer;
   transition: all 0.3s ease;
   padding: 0;
+}
+
+/* 24x24 hit area around the 10px dot (WCAG target size); the gap grows to
+   14px so neighbouring hit areas don't overlap */
+.carousel-dot::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
 }
 
 .carousel-dot:hover {
@@ -181,6 +191,24 @@
   background: var(--accentColor);
   border-color: var(--accentColor);
   box-shadow: 0 0 8px rgba(94, 234, 212, 0.4);
+}
+
+.work-all-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 30px auto 0;
+  padding: 10px 4px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.work-all-link:hover {
+  color: var(--accentColor);
+  border-color: var(--accentColor);
 }
 
 /* ── Work Image (reused) ── */
@@ -256,11 +284,11 @@
     font-size: 50px;
   }
 
-  .carousel-details h4 {
+  .carousel-details h3 {
     font-size: 22px;
   }
 
-  .carousel-number h3 {
+  .carousel-number .carousel-index {
     font-size: 45px;
   }
 
@@ -328,11 +356,11 @@
     margin-bottom: 30px;
   }
 
-  .carousel-number h3 {
+  .carousel-number .carousel-index {
     font-size: 35px;
   }
 
-  .carousel-details h4 {
+  .carousel-details h3 {
     font-size: 20px;
   }
 
