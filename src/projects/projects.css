@@ -20,6 +20,52 @@ body {
   outline: none;
 }
 
+/* Entrance on first paint, before any JS (which loads after the paint): the
+   hero lines rise and fade in one after another, and the first image (the
+   LCP element, data-reveal="lcp") only rises, so it counts as painted at once.
+   Same motion as the GSAP scroll reveals (power3.out) */
+@media (prefers-reduced-motion: no-preference) {
+  .pj-hero-in > * {
+    animation: pj-rise 1.1s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+  }
+
+  .pj-hero-in > :nth-child(2) {
+    animation-delay: 0.08s;
+  }
+
+  .pj-hero-in > :nth-child(3) {
+    animation-delay: 0.16s;
+  }
+
+  .pj-hero-in > :nth-child(4) {
+    animation-delay: 0.24s;
+  }
+
+  [data-reveal="lcp"] {
+    animation: pj-rise-only 1.1s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+  }
+}
+
+@keyframes pj-rise {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pj-rise-only {
+  from {
+    transform: translateY(80px);
+  }
+  to {
+    transform: none;
+  }
+}
+
 /* ── Hero ── */
 .pj-hero {
   margin: 0 auto;

@@ -47,11 +47,34 @@ collect("index.html");
 rmSync(manifestDir, { recursive: true, force: true });
 
 let template = readFileSync(templateFile, "utf8");
+
+// Inline the page's CSS (about 20KB raw, 6KB gzipped): four render-blocking
+// stylesheet requests held the first paint ~0.4s on a mobile connection
+template = template.replace(
+  /<link rel="stylesheet"[^>]*href="\/(assets\/[^"]+\.css)"[^>]*>/g,
+  (_, file) => `<style>${readFileSync(join(dist, file), "utf8").trim()}</style>`
+);
+
+// The page is complete as HTML, so its JS (hydration: cursor, smooth scroll,
+// reveals) and the home prefetches wait for the load event and first paint. As plain tags they
+// were requested ahead of the LCP image, and Lighthouse's mobile model counted
+// their download against LCP
+const entry = template.match(/<script type="module" crossorigin src="(\/assets\/[^"]+\.js)"><\/script>/);
+if (!entry) throw new Error("build-projects: no module script in projects.html");
+const preloads = [...template.matchAll(/<link rel="modulepreload" crossorigin href="(\/assets\/[^"]+)">/g)].map(
+  (m) => m[1]
+);
 const prefetch = [...homeFiles]
-  .filter((file) => !template.includes(`/${file}"`))
-  .map((file) => `<link rel="prefetch" href="/${file}" />`)
-  .join("\n  ");
-template = template.replace("</head>", `  ${prefetch}\n</head>`);
+  .map((file) => `/${file}`)
+  .filter((file) => !preloads.includes(file) && file !== entry[1]);
+// Started once the page has loaded and painted (the paint timing entry), so
+// the content always shows first; the entrance animations are CSS for that
+const loader = `<script>(function(){var d=document,n=0,go=function(){if(++n<2)return;var s=d.createElement("script");s.type="module";s.src=${JSON.stringify(
+  entry[1]
+)};d.head.append(s);${JSON.stringify(
+  prefetch
+)}.forEach(function(h){var l=d.createElement("link");l.rel="prefetch";l.href=h;d.head.append(l)})};addEventListener("load",go);try{new PerformanceObserver(function(l,o){o.disconnect();go()}).observe({type:"paint",buffered:true})}catch(e){go()}})()</script>`;
+template = template.replace(entry[0], loader).replace(/\s*<link rel="modulepreload" crossorigin href="[^"]+">/g, "");
 
 for (const path of paths) {
   const { head, html } = render(path);

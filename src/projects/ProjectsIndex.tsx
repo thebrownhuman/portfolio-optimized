@@ -17,7 +17,8 @@ const ProjectsIndex = () => (
 
     <ol className="pj-list section-container">
       {projects.map((p, i) => (
-        <li className="pj-item" key={p.slug} data-reveal>
+        // The first row's image is the page's LCP: it must not wait hidden for JS
+        <li className="pj-item" key={p.slug} data-reveal={i === 0 ? "lcp" : ""}>
           <a className="pj-card" href={`/projects/${p.slug}`}>
             <div className="pj-media" data-cursor="disable">
               <img

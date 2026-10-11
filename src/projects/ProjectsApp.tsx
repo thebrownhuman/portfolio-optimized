@@ -53,13 +53,10 @@ const ProjectsApp = ({ route }: { route: Route }) => {
     // hiding CSS needs the "js" class), so no-JS visitors never see an empty page
     const ctx = gsap.context(() => {
       if (prefersReducedMotion) return;
-      // fromTo: projects.html's CSS holds these at opacity 0 until they play
-      gsap.fromTo(
-        ".pj-hero-in > *",
-        { y: 60, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1.1, ease: "power3.out", stagger: 0.08 }
-      );
-      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
+      // The hero and the first image (data-reveal="lcp") animate in with CSS
+      // (projects.css), as soon as the page paints; this script loads after
+      // that. projects.html's CSS holds the other rows at opacity 0 until here
+      gsap.utils.toArray<HTMLElement>('[data-reveal]:not([data-reveal="lcp"])').forEach((el) => {
         gsap.fromTo(
           el,
           { y: 80, opacity: 0 },

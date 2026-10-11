@@ -20,7 +20,8 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
         </div>
       </section>
 
-      <figure className="pd-shot section-container" data-reveal data-cursor="disable">
+      {/* The hero image is the page's LCP: it must not wait hidden for JS */}
+      <figure className="pd-shot section-container" data-reveal="lcp" data-cursor="disable">
         <img
           src={`/images/${p.image}-1600.webp`}
           srcSet={imageSrcSet(p.image)}
