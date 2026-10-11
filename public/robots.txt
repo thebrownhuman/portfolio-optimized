@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://shivanshmishra.in/sitemap.xml
+Sitemap: https://shivanshmishra.com/sitemap.xml
