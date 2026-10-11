@@ -28,7 +28,30 @@ await build({
 
 const { render, paths } = await import(pathToFileURL(join(ssrOut, "render.js")).href);
 const templateFile = join(dist, "projects.html");
-const template = readFileSync(templateFile, "utf8");
+
+// Prefetch the home page's own code (entry, page shell, intro), so a nav link
+// back home starts at once. Not the 3D character's chunks (three, rapier:
+// megabytes, and the page shows without them)
+const manifestDir = join(dist, ".vite");
+const manifest = JSON.parse(readFileSync(join(manifestDir, "manifest.json"), "utf8"));
+const homeFiles = new Set();
+const collect = (key) => {
+  const chunk = manifest[key];
+  if (!chunk || homeFiles.has(chunk.file)) return;
+  homeFiles.add(chunk.file);
+  chunk.css?.forEach((css) => homeFiles.add(css));
+  chunk.imports?.forEach(collect);
+};
+collect("index.html");
+["src/components/MainContainer.tsx", "src/components/utils/initialFX.ts"].forEach(collect);
+rmSync(manifestDir, { recursive: true, force: true });
+
+let template = readFileSync(templateFile, "utf8");
+const prefetch = [...homeFiles]
+  .filter((file) => !template.includes(`/${file}"`))
+  .map((file) => `<link rel="prefetch" href="/${file}" />`)
+  .join("\n  ");
+template = template.replace("</head>", `  ${prefetch}\n</head>`);
 
 for (const path of paths) {
   const { head, html } = render(path);

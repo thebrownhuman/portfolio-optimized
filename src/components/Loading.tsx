@@ -6,6 +6,7 @@ import { useLoading } from "../context/LoadingProvider";
 
 import Marquee from "react-fast-marquee";
 import { prefersReducedMotion } from "./utils/reducedMotion";
+import { markIntroPlayed } from "./utils/introSkip";
 
 const Loading = ({ percent, fading = false }: { percent: number; fading?: boolean }) => {
   const { setIsLoading } = useLoading();
@@ -90,6 +91,7 @@ const Loading = ({ percent, fading = false }: { percent: number; fading?: boolea
       if (!instant) setClicked(true);
       timer = setTimeout(() => {
         probe("reveal");
+        markIntroPlayed();
         span("reveal:initialFX", () => (initialFX ? initialFX() : revealWithoutFX()));
         span("reveal:setIsLoading", () => setIsLoading(false));
       }, instant ? 0 : 900);

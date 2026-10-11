@@ -1,5 +1,6 @@
 import { SplitText } from "gsap/SplitText";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { setScrollPaused, smoother } from "../Navbar";
 import { prefersReducedMotion } from "./reducedMotion";
 import { DEBUG, debugParams } from "./debug";
@@ -147,8 +148,56 @@ export function initialFX() {
 function scrollToHashSection() {
   const hash = window.location.hash;
   if (!["#about", "#work", "#contact"].includes(hash)) return;
-  if (smoother) smoother.scrollTo(hash, true, "top top");
-  else document.querySelector(hash)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+  // Jump, don't glide: the visitor asked for this section, not the page above it
+  const go = () => {
+    const target = document.querySelector(hash);
+    const content = document.getElementById("smooth-content");
+    if (!target) return;
+    if (!smoother || !content) {
+      target.scrollIntoView({ block: "start" });
+      return;
+    }
+    // smoother.scrollTo() lands short of the lower sections with speed != 1
+    // (Work came out ~900px early: it clamps the content offset to the native
+    // scroll range). scrollTop() takes the content offset itself
+    const y = target.getBoundingClientRect().top - content.getBoundingClientRect().top;
+    smoother.scrollTop(y);
+  };
+  // The smoother's scrollable height lags the page: it was measured while
+  // sections were still mounting (a returning visit reveals at once, without
+  // the loader's wait), so a plain jump stops at the old bottom. Refresh it
+  // first; each refresh then re-aims at the target. Keep following on resize
+  // (the lazy TechStack above Contact) for a while, until the visitor scrolls
+  const content = document.getElementById("smooth-content") ?? document.body;
+  // Scrolling from inside the refresh event re-enters the refresh (stack
+  // overflow): aim on the next frame instead
+  let frame = 0;
+  const aim = () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(go);
+  };
+  // Only real height changes, settled: a refresh can itself touch the content
+  // box, and refreshing on every callback would feed itself
+  let height = content.offsetHeight;
+  let settle: ReturnType<typeof setTimeout> | undefined;
+  const observer = new ResizeObserver(() => {
+    if (content.offsetHeight === height) return;
+    height = content.offsetHeight;
+    clearTimeout(settle);
+    settle = setTimeout(() => ScrollTrigger.refresh(), 100);
+  });
+  const inputs = ["wheel", "touchstart", "keydown", "pointerdown"];
+  const stop = () => {
+    observer.disconnect();
+    clearTimeout(settle);
+    ScrollTrigger.removeEventListener("refresh", aim);
+    inputs.forEach((t) => removeEventListener(t, stop));
+  };
+  ScrollTrigger.addEventListener("refresh", aim);
+  ScrollTrigger.refresh();
+  observer.observe(content);
+  inputs.forEach((t) => addEventListener(t, stop, { passive: true, once: true }));
+  setTimeout(stop, 8000);
 }
 
 function LoopText(Text1: SplitText, Text2: SplitText) {

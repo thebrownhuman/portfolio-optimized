@@ -20,6 +20,8 @@ export default defineConfig({
     },
   ],
   build: {
+    // Read by scripts/build-projects.mjs (home chunks to prefetch), then deleted
+    manifest: true,
     rollupOptions: {
       // Two pages: the home page and the /projects template
       input: {

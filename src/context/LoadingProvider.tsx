@@ -7,6 +7,7 @@ import {
 } from "react";
 import Loading from "../components/Loading";
 import { debugFlag } from "../components/utils/debugProbe";
+import { skipIntro } from "../components/utils/introSkip";
 
 // ?debug&norelease: keep the loader mounted (hidden) after the reveal
 const keepLoader = debugFlag("norelease");
@@ -28,6 +29,42 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
   const [loading, setLoading] = useState(0);
   const [loaderGone, setLoaderGone] = useState(false);
 
+  // Returning visit (introSkip.ts): no loader; reveal as soon as the landing is
+  // mounted. The character rises in on its own once its model has loaded
+  useEffect(() => {
+    if (!skipIntro) return;
+    let cancelled = false;
+    let tries = 0;
+    const reveal = async () => {
+      let fx: (() => void) | undefined;
+      try {
+        fx = (await import("../components/utils/initialFX")).initialFX;
+      } catch {
+        fx = undefined;
+      }
+      const ready = () => {
+        if (cancelled) return;
+        // The landing chunk is still loading
+        if (!document.querySelector(".landing-intro h1") && ++tries < 100) {
+          setTimeout(ready, 50);
+          return;
+        }
+        document.getElementsByTagName("main")[0]?.classList.remove("main-pending");
+        if (fx) fx();
+        else {
+          document.body.style.overflowY = "auto";
+          document.getElementsByTagName("main")[0]?.classList.add("main-active");
+        }
+        setIsLoading(false);
+      };
+      document.fonts.ready.then(ready);
+    };
+    reveal();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     if (isLoading || keepLoader) return;
     const t = setTimeout(() => setLoaderGone(true), LOADER_FADE_MS);
@@ -46,9 +83,15 @@ export const LoadingProvider = ({ children }: PropsWithChildren) => {
           <Loading percent={loading} />
         </div>
       ) : (
-        !loaderGone && <Loading percent={loading} fading={!isLoading} />
+        !skipIntro && !loaderGone && <Loading percent={loading} fading={!isLoading} />
       )}
-      <main className="main-body">{children}</main>
+      {/* Without the loader on top, the page stays hidden until it is revealed
+          (otherwise the landing would show, then jump to the #section) */}
+      {/* The class never changes in React: initialFX adds main-active itself, and a
+          re-render with a new className would wipe it */}
+      <main className={skipIntro ? "main-body main-pending" : "main-body"}>
+        {children}
+      </main>
     </LoadingContext.Provider>
   );
 };

@@ -72,6 +72,11 @@ main {
   transition: 0.3s;
 }
 
+/* Returning visit with no loader: hidden until the reveal fades it in */
+.main-pending {
+  opacity: 0;
+}
+
 .main-active {
   opacity: 0;
   animation: fadeIn 1s 1;
