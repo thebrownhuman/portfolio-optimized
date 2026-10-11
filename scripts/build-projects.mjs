@@ -46,14 +46,18 @@ collect("index.html");
 ["src/components/MainContainer.tsx", "src/components/utils/initialFX.ts"].forEach(collect);
 rmSync(manifestDir, { recursive: true, force: true });
 
-let template = readFileSync(templateFile, "utf8");
+// Inline a page's render-blocking CSS: it is small (home ~11KB raw, projects
+// ~20KB; 4-6KB gzipped), and each stylesheet request held the first paint
+// ~0.2-0.4s on a mobile connection
+const inlineCss = (html) =>
+  html.replace(
+    /<link rel="stylesheet"[^>]*href="\/(assets\/[^"]+\.css)"[^>]*>/g,
+    (_, file) => `<style>${readFileSync(join(dist, file), "utf8").trim()}</style>`
+  );
+const homeFile = join(dist, "index.html");
+writeFileSync(homeFile, inlineCss(readFileSync(homeFile, "utf8")));
 
-// Inline the page's CSS (about 20KB raw, 6KB gzipped): four render-blocking
-// stylesheet requests held the first paint ~0.4s on a mobile connection
-template = template.replace(
-  /<link rel="stylesheet"[^>]*href="\/(assets\/[^"]+\.css)"[^>]*>/g,
-  (_, file) => `<style>${readFileSync(join(dist, file), "utf8").trim()}</style>`
-);
+let template = inlineCss(readFileSync(templateFile, "utf8"));
 
 // The page is complete as HTML, so its JS (hydration: cursor, smooth scroll,
 // reveals) and the home prefetches wait for the load event and first paint. As plain tags they
