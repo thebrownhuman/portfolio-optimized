@@ -74,55 +74,33 @@ const WhatIDo = () => {
     };
   }, []);
 
-  // The box is a fixed height per breakpoint, and a closed card gets half of it.
-  // When a closed card's title + description need more than that (BACKEND &
-  // AUTOMATION wraps, and narrow phones wrap the text more), raise the box's
-  // min-height so every description shows in full and clears the arrow button
+  // The cards size to their own content (WhatIDo.css), so the section's height
+  // can change with the window width or the fonts loading. Scroll triggers below
+  // it (pins, hash jumps, lazy sections) measured the old height: refresh them
+  // when the resting height changes. Not while a card is open, which changes it
+  // only until the pointer leaves
   useEffect(() => {
     const boxIn = boxInRef.current;
     if (!boxIn) return;
+    let lastHeight = -1;
     let refreshTimer: number | undefined;
-    const fit = () => {
-      const cards = containerRef.current.filter((c): c is HTMLDivElement => !!c);
-      // Only measure the resting state: an open card has different padding
-      const busy = cards.some(
+    const observer = new ResizeObserver(() => {
+      const busy = containerRef.current.some(
         (c) =>
-          c.matches(":hover") ||
-          c.classList.contains("what-content-active") ||
-          c.classList.contains("what-sibling")
+          !!c &&
+          (c.matches(":hover") ||
+            c.classList.contains("what-content-active") ||
+            c.classList.contains("what-sibling"))
       );
-      if (busy || getComputedStyle(boxIn).display === "none") return;
-      let need = 0;
-      cards.forEach((card) => {
-        const text = card.querySelector("p");
-        if (!text) return;
-        const style = getComputedStyle(card);
-        const top = card.getBoundingClientRect().top;
-        // Text end, from the card's top (top padding included)
-        const textEnd = text.getBoundingClientRect().bottom - top;
-        // The arrow sits in the bottom-right corner, inside the bottom padding
-        const arrow = card.querySelector(".what-arrow");
-        const arrowSpace = arrow
-          ? card.getBoundingClientRect().bottom - arrow.getBoundingClientRect().top + 8
-          : 0;
-        const bottom = Math.max(parseFloat(style.paddingBottom) || 0, arrowSpace);
-        need = Math.max(need, textEnd + bottom);
-      });
-      // Closed cards are min-height: 50% of the box
-      const minHeight = need ? `${Math.ceil(need * 2)}px` : "";
-      if (minHeight === boxIn.style.minHeight) return;
-      boxIn.style.minHeight = minHeight;
-      // The page got taller: pinned sections, the hash jumps and the lazy
-      // triggers below measured the old height
+      const height = boxIn.offsetHeight;
+      if (busy || height === lastHeight) return;
+      const first = lastHeight < 0;
+      lastHeight = height;
+      if (first) return;
       clearTimeout(refreshTimer);
       refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 150);
-    };
-    // Also runs when the box first shows (desktop reveals it from display: none)
-    // and on width changes; the text end doesn't depend on the box height, so
-    // setting the min-height settles after one extra call
-    const observer = new ResizeObserver(fit);
+    });
     observer.observe(boxIn);
-    document.fonts?.ready.then(fit);
     return () => {
       observer.disconnect();
       clearTimeout(refreshTimer);
@@ -201,14 +179,18 @@ const WhatIDo = () => {
                 Crafting performant, responsive interfaces with modern frameworks.
                 From SPAs to full-stack web apps, I deliver polished user experiences.
               </p>
-              <h5>Skillset & tools</h5>
-              <div className="what-content-flex">
-                <div className="what-tags">React</div>
-                <div className="what-tags">JavaScript</div>
-                <div className="what-tags">TypeScript</div>
-                <div className="what-tags">HTML5</div>
-                <div className="what-tags">CSS3</div>
-                <div className="what-tags">Tkinter</div>
+              <div className="what-more">
+                <div>
+                  <h5>Skillset & tools</h5>
+                  <div className="what-content-flex">
+                    <div className="what-tags">React</div>
+                    <div className="what-tags">JavaScript</div>
+                    <div className="what-tags">TypeScript</div>
+                    <div className="what-tags">HTML5</div>
+                    <div className="what-tags">CSS3</div>
+                    <div className="what-tags">Tkinter</div>
+                  </div>
+                </div>
               </div>
               <div className="what-arrow" aria-hidden="true"></div>
             </div>
@@ -242,16 +224,20 @@ const WhatIDo = () => {
                 network health checks to RPA agents, I build software that
                 streamlines operations.
               </p>
-              <h5>Skillset & tools</h5>
-              <div className="what-content-flex">
-                <div className="what-tags">Python</div>
-                <div className="what-tags">Java</div>
-                <div className="what-tags">C++</div>
-                <div className="what-tags">SQL</div>
-                <div className="what-tags">Node.js</div>
-                <div className="what-tags">Express</div>
-                <div className="what-tags">Selenium</div>
-                <div className="what-tags">AWS</div>
+              <div className="what-more">
+                <div>
+                  <h5>Skillset & tools</h5>
+                  <div className="what-content-flex">
+                    <div className="what-tags">Python</div>
+                    <div className="what-tags">Java</div>
+                    <div className="what-tags">C++</div>
+                    <div className="what-tags">SQL</div>
+                    <div className="what-tags">Node.js</div>
+                    <div className="what-tags">Express</div>
+                    <div className="what-tags">Selenium</div>
+                    <div className="what-tags">AWS</div>
+                  </div>
+                </div>
               </div>
               <div className="what-arrow" aria-hidden="true"></div>
             </div>

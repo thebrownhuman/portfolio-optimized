@@ -50,21 +50,16 @@
   box-sizing: border-box;
 }
 
-/* The open box grows past 67% when its content needs it (BACKEND & AUTOMATION
-   wraps to two lines, which pushed its tags out of the clipped box), and the
-   other box takes what is left: 33% whenever the open one is 67% */
 .what-noTouch:hover,
 .what-content-active {
   min-height: 67%;
-  height: max-content;
   padding: 40px 50px;
 }
 
 .what-noTouch:hover ~ .what-content,
 .what-box-in:hover .what-noTouch:not(:hover),
 .what-content.what-sibling {
-  min-height: 0;
-  flex: 1 1 0;
+  min-height: 33%;
   padding: 10px 50px;
 }
 .what-content h3 {
@@ -231,22 +226,6 @@
     opacity: 0.2;
   }
 }
-/* Closed cards show title + description only: the box can now be taller than
-   before (WhatIDo.tsx fits it to the longest description), so the tags no longer
-   sit below the clipped edge by themselves. Same as the <=900px layout */
-.what-content h5,
-.what-content-flex {
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.what-noTouch:hover h5,
-.what-content-active h5 {
-  opacity: 0.5;
-}
-.what-noTouch:hover .what-content-flex,
-.what-content-active .what-content-flex {
-  opacity: 1;
-}
 .what-content-flex {
   display: flex;
   gap: 5px;
@@ -355,7 +334,7 @@
   .what-noTouch:hover ~ .what-content,
   .what-box-in:hover .what-noTouch:not(:hover),
   .what-content.what-sibling {
-    min-height: 0;
+    min-height: 33%;
     padding: 10px 50px;
   }
 }
@@ -372,8 +351,7 @@
     justify-content: left;
   }
   .what-box:last-child {
-    /* min: the box inside grows when a description needs it (WhatIDo.tsx) */
-    min-height: 500px;
+    height: 500px;
   }
   .what-box {
     width: 500px;
@@ -436,5 +414,71 @@
   .what-box h2 {
     font-size: 7rem;
     line-height: 6.8rem;
+  }
+}
+
+/* ── Content-sized cards ──
+   Each card is as tall as its own content, in every state: closed shows title,
+   subtitle and description; open also shows the skill tags. The box is the sum
+   of the two, so nothing is cut and no space is left over (the old fixed box
+   with a 67/33 split clipped BACKEND & AUTOMATION, whose title wraps). Placed
+   last so it wins over the per-breakpoint heights and paddings above. */
+.what-box-in {
+  height: auto;
+  --what-pad: 50px;
+}
+.what-border2 svg {
+  height: 100%;
+}
+.what-content,
+.what-noTouch:hover,
+.what-content-active,
+.what-noTouch:hover ~ .what-content,
+.what-box-in:hover .what-noTouch:not(:hover),
+.what-content.what-sibling {
+  height: auto;
+  min-height: 0;
+  /* Bottom: room for the arrow (12px + 25px) under the last line */
+  padding: var(--what-pad) var(--what-pad) 45px;
+}
+.what-content-in {
+  height: auto;
+}
+.what-content p {
+  margin-bottom: 0;
+}
+.what-arrow {
+  bottom: 12px;
+}
+/* The skill tags open with the card */
+.what-more {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s;
+}
+.what-more > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.what-noTouch:hover .what-more,
+.what-content-active .what-more {
+  grid-template-rows: 1fr;
+}
+@media only screen and (max-width: 1400px) {
+  .what-box-in {
+    --what-pad: 30px;
+  }
+}
+@media only screen and (max-width: 1024px) {
+  .what-box-in {
+    --what-pad: 50px;
+  }
+}
+@media only screen and (max-width: 900px) {
+  .what-box:last-child {
+    height: auto;
+  }
+  .what-box-in {
+    --what-pad: 30px;
   }
 }
