@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useRef } from "react";
 import * as THREE from "three";
-import setCharacter from "./utils/character";
-import setLighting from "./utils/lighting";
+import setCharacter, { compileOrGiveUp } from "./utils/character";
+import setLighting, { yieldToMain } from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
 import { span } from "../utils/perfSpan";
 import { debugDprCap, debugOn, probe } from "../utils/debugProbe";
@@ -92,6 +92,9 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef }: Props) => {
     let mixer: THREE.AnimationMixer;
     let animFrameId: number;
     let disposed = false;
+    // Set from the character's arrival until warmUpDraws is done: the render loop
+    // must not draw it before its programs are ready
+    let warming = false;
 
     const clock = new THREE.Clock();
     // ?debug: canvas render times and the intro clip's time at each render
@@ -134,9 +137,15 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef }: Props) => {
       });
     };
 
-    const light = setLighting(scene);
+    const light = setLighting(scene, renderer);
     const progress = setProgress((value) => setLoading(value));
-    const { loadCharacter } = setCharacter(renderer, scene, camera);
+    const { loadCharacter } = setCharacter(
+      renderer,
+      scene,
+      camera,
+      // Returning visit: no loader to wait behind, the environment can come after
+      skipIntro ? Promise.resolve() : light.envReady
+    );
     // The canvas follows its container's real size: window resize events on iPad
     // (Stage Manager, split view) are not a reliable signal, and the container is
     // sized by CSS that changes at the 1024px breakpoint
@@ -185,7 +194,21 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef }: Props) => {
         (window as Window & { __char?: unknown }).__char = { character: gltf.scene, mixer, introAction };
       }
       const character = gltf.scene;
+      // Not drawn by the render loop until its programs are ready
+      warming = true;
       scene.add(character);
+      // setCharTimeline made the monitor transparent: new programs, compiled
+      // here off the main thread like the rest (no-op for the cached ones).
+      // Both paths compile in this same order: three names a program after the
+      // first material that uses it, the name is in the shader source, and the
+      // browser's compiled-shader cache only hits on identical sources
+      await compileOrGiveUp(renderer, character, camera, scene);
+      if (disposed) return;
+      // Returning visit (no loader to hide it behind): draw him at once and pay
+      // the rest of the program setup in that first frame
+      if (skipIntro) warming = false;
+      else await warmUpDraws(character);
+      if (disposed) return;
       loadedCharacter = character;
       headBone = character.getObjectByName("spine006") || null;
       // Debug builds: render the current frame into a square transparent PNG
@@ -244,6 +267,68 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef }: Props) => {
       if (!disposed) progress.loaded();
     });
 
+    // ANGLE (Chrome on Windows) finishes linking a program at its first draw, not
+    // at compile, so the first frame with the character blocked for ~350ms. Draw
+    // each mesh once, clipped to a 1px scissor, one per task: the same programs
+    // get ready in small tasks, and nothing visible is drawn (the canvas is still
+    // empty here, the character's first real frame comes after)
+    async function warmUpDraws(character: THREE.Object3D) {
+      const meshes: THREE.Mesh[] = [];
+      character.traverseVisible((o) => {
+        if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.Mesh);
+      });
+      // A transmissive mesh (the glasses) makes the renderer draw the other meshes
+      // a second time into its own target, with their own program variants. Each
+      // step links at most a couple of programs: a mesh alone, then the same mesh
+      // with the transmissive ones. Meshes sharing a material share programs
+      const transmissive = (m: THREE.Mesh) =>
+        ((m.material as THREE.MeshPhysicalMaterial).transmission ?? 0) > 0;
+      const seen = new Set<string>();
+      const steps: Array<(m: THREE.Mesh) => boolean> = [];
+      for (const mesh of meshes) {
+        const key = `${(mesh as THREE.SkinnedMesh).isSkinnedMesh}:${[mesh.material]
+          .flat()
+          .map((m) => m.uuid)
+          .join()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        steps.push((m) => m === mesh);
+        steps.push((m) => m === mesh || transmissive(m));
+      }
+      if (!steps.length) {
+        warming = false;
+        return;
+      }
+      const shown = meshes.map((m) => m.visible);
+      const culled = meshes.map((m) => m.frustumCulled);
+      const autoClear = renderer.autoClear;
+      try {
+        for (const visibleIn of steps) {
+          if (disposed) break;
+          meshes.forEach((m) => {
+            m.visible = visibleIn(m);
+            // The intro holds him below the frame: culling would skip the draw
+            m.frustumCulled = false;
+          });
+          renderer.autoClear = false;
+          renderer.setScissorTest(true);
+          renderer.setScissor(0, 0, 1, 1);
+          renderer.render(scene, camera);
+          renderer.setScissorTest(false);
+          renderer.autoClear = autoClear;
+          await yieldToMain();
+        }
+      } finally {
+        renderer.setScissorTest(false);
+        renderer.autoClear = autoClear;
+        meshes.forEach((m, j) => {
+          m.visible = shown[j];
+          m.frustumCulled = culled[j];
+        });
+        warming = false;
+      }
+    }
+
     let mouse = { x: 0, y: 0 },
       interpolation = { x: 0.1, y: 0.2 };
     let scrollY = window.scrollY;
@@ -295,6 +380,7 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef }: Props) => {
         clock.getDelta();
         return;
       }
+      if (warming) return;
       const now = performance.now();
       // Throttled frames keep the clock running, so the idle clips stay real-time
       if (now >= activeUntil && now - lastRender < IDLE_FRAME_MS - 1) return;
@@ -354,6 +440,7 @@ const Scene = ({ canvasDiv, hoverDiv: hoverDivRef }: Props) => {
       killCharTimeline();
       progress.dispose();
       scene.clear();
+      light.dispose();
       renderer.dispose();
       document.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("scroll", onScroll);

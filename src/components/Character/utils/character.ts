@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { yieldToMain } from "./lighting";
 import { GLTF, GLTFLoader, MeshoptDecoder } from "three-stdlib";
 // Content-hashed by Vite (/assets/character-<hash>.glb): cached for a year as immutable
 import characterUrl from "../../../assets/models/character.glb?url";
@@ -6,7 +7,10 @@ import characterUrl from "../../../assets/models/character.glb?url";
 const setCharacter = (
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
-  camera: THREE.PerspectiveCamera
+  camera: THREE.PerspectiveCamera,
+  // Resolves once the scene's environment is set: the compile waits for it, so the
+  // programs it builds are the ones the first frame uses
+  envReady: Promise<void>
 ) => {
   const loader = new GLTFLoader();
   // character.glb is meshopt-compressed (gltf-transform: quantize + EXT_meshopt_compression)
@@ -44,6 +48,8 @@ const setCharacter = (
                   mesh.frustumCulled = true;
                 }
               });
+              await envReady;
+              await yieldToMain();
               await compileOrGiveUp(renderer, character, camera, scene);
               for (const name of ["footR", "footL"]) {
                 const foot = character.getObjectByName(name);
@@ -81,7 +87,7 @@ export default setCharacter;
 // waited for its 30s deadline. Stop waiting; the first render compiles what's left.
 const COMPILE_TIMEOUT_MS = 4000;
 
-function compileOrGiveUp(
+export function compileOrGiveUp(
   renderer: THREE.WebGLRenderer,
   object: THREE.Object3D,
   camera: THREE.Camera,
