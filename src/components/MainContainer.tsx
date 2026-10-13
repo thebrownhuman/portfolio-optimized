@@ -1,6 +1,7 @@
 import {
   lazy,
   PropsWithChildren,
+  Ref,
   Suspense,
   useEffect,
   useLayoutEffect,
@@ -8,6 +9,7 @@ import {
   useState,
 } from "react";
 import { createPortal, flushSync } from "react-dom";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import About from "./About";
 import Career from "./Career";
 import Contact from "./Contact";
@@ -23,6 +25,45 @@ import setSplitText from "./utils/splitText";
 import onDebouncedResize from "./utils/debouncedResize";
 
 const TechStack = lazy(() => import("./TechStack"));
+
+// Same box as TechStack's root (.techstack sets the height), so swapping in the
+// real section causes no layout shift
+const TechStackPlaceholder = ({ innerRef }: { innerRef?: Ref<HTMLDivElement> }) => (
+  <div className="techstack" ref={innerRef}>
+    <h2> My Techstack</h2>
+  </div>
+);
+
+// TechStack pulls in rapier (~2MB JS + wasm) and sits at the bottom of the page,
+// so it is only fetched once its section comes within a viewport of the screen
+const LazyTechStack = () => {
+  const [near, setNear] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || near) return;
+    // ScrollTrigger rather than an IntersectionObserver: under ScrollSmoother the
+    // content sits in a fixed, overflow-hidden wrapper that clips the observer,
+    // so a rootMargin would never take effect
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: "top bottom+=100%",
+      once: true,
+      onEnter: () => setNear(true),
+    });
+    return () => trigger.kill();
+  }, [near]);
+
+  if (!near) {
+    return <TechStackPlaceholder innerRef={ref} />;
+  }
+  return (
+    <Suspense fallback={<TechStackPlaceholder />}>
+      <TechStack />
+    </Suspense>
+  );
+};
 
 const MainContainer = ({ children }: PropsWithChildren) => {
   const [isDesktopView, setIsDesktopView] = useState<boolean>(
@@ -77,9 +118,7 @@ const MainContainer = ({ children }: PropsWithChildren) => {
             <Career />
             <Work />
             {isDesktopView ? (
-              <Suspense fallback={<div>Loading....</div>}>
-                <TechStack />
-              </Suspense>
+              <LazyTechStack />
             ) : (
               <TechStackLite />
             )}
