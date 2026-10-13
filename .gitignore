@@ -28,3 +28,4 @@ backup/
 .env
 # TypeScript incremental build state
 *.tsbuildinfo
+.wrangler/
