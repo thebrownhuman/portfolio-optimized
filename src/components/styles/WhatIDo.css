@@ -50,16 +50,21 @@
   box-sizing: border-box;
 }
 
+/* The open box grows past 67% when its content needs it (BACKEND & AUTOMATION
+   wraps to two lines, which pushed its tags out of the clipped box), and the
+   other box takes what is left: 33% whenever the open one is 67% */
 .what-noTouch:hover,
 .what-content-active {
   min-height: 67%;
+  height: max-content;
   padding: 40px 50px;
 }
 
 .what-noTouch:hover ~ .what-content,
 .what-box-in:hover .what-noTouch:not(:hover),
 .what-content.what-sibling {
-  min-height: 33%;
+  min-height: 0;
+  flex: 1 1 0;
   padding: 10px 50px;
 }
 .what-content h3 {
@@ -334,7 +339,7 @@
   .what-noTouch:hover ~ .what-content,
   .what-box-in:hover .what-noTouch:not(:hover),
   .what-content.what-sibling {
-    min-height: 33%;
+    min-height: 0;
     padding: 10px 50px;
   }
 }
