@@ -81,6 +81,7 @@ const WhatIDo = () => {
   useEffect(() => {
     const boxIn = boxInRef.current;
     if (!boxIn) return;
+    let refreshTimer: number | undefined;
     const fit = () => {
       const cards = containerRef.current.filter((c): c is HTMLDivElement => !!c);
       // Only measure the resting state: an open card has different padding
@@ -108,7 +109,13 @@ const WhatIDo = () => {
         need = Math.max(need, textEnd + bottom);
       });
       // Closed cards are min-height: 50% of the box
-      boxIn.style.minHeight = need ? `${Math.ceil(need * 2)}px` : "";
+      const minHeight = need ? `${Math.ceil(need * 2)}px` : "";
+      if (minHeight === boxIn.style.minHeight) return;
+      boxIn.style.minHeight = minHeight;
+      // The page got taller: pinned sections, the hash jumps and the lazy
+      // triggers below measured the old height
+      clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 150);
     };
     // Also runs when the box first shows (desktop reveals it from display: none)
     // and on width changes; the text end doesn't depend on the box height, so
@@ -116,7 +123,10 @@ const WhatIDo = () => {
     const observer = new ResizeObserver(fit);
     observer.observe(boxIn);
     document.fonts?.ready.then(fit);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(refreshTimer);
+    };
   }, []);
 
   return (
