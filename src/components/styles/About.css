@@ -31,14 +31,6 @@
   letter-spacing: 1px;
 }
 
-.about-me p.about-bio {
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 1.6;
-  letter-spacing: 0.3px;
-  color: #cfcbd2;
-}
-
 @media only screen and (min-width: 600px) {
   .about-section {
     justify-content: center;
