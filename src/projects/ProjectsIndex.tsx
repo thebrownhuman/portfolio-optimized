@@ -24,7 +24,7 @@ const ProjectsIndex = () => (
               <img
                 src={`/images/${p.image}-1600.webp`}
                 srcSet={imageSrcSet(p.image)}
-                sizes="(max-width: 900px) 100vw, 60vw"
+                sizes="(max-width: 900px) 92vw, min(46vw, 660px)"
                 width={1600}
                 height={873}
                 alt={p.title}

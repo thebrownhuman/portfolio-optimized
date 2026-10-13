@@ -70,6 +70,8 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
           <img
             className="pd-more-img"
             src={`/images/${prev.image}-900.webp`}
+            srcSet={imageSrcSet(prev.image)}
+            sizes="(max-width: 900px) 100vw, 50vw"
             width={900}
             height={491}
             alt=""
@@ -89,6 +91,8 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
           <img
             className="pd-more-img"
             src={`/images/${next.image}-900.webp`}
+            srcSet={imageSrcSet(next.image)}
+            sizes="(max-width: 900px) 100vw, 50vw"
             width={900}
             height={491}
             alt=""

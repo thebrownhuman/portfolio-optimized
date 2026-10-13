@@ -34,6 +34,6 @@ export function routeFor(pathname: string): Route | undefined {
 export const toolList = (p: Project) => p.tools.split(",").map((t) => t.trim());
 
 export const imageSrcSet = (image: string) =>
-  `/images/${image}-900.webp 900w, /images/${image}-1600.webp 1600w`;
+  `/images/${image}-480.webp 480w, /images/${image}-720.webp 720w, /images/${image}-900.webp 900w, /images/${image}-1600.webp 1600w`;
 
 export const pad = (n: number) => String(n).padStart(2, "0");

@@ -21,6 +21,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
   <link rel="preload" href="/fonts/geist-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
+  <!-- The top-left glow (.landing-circle1::before, Landing.css) is a CSS background on
+       a div React renders, so without this it is found only after the JS runs.
+       It is the mobile LCP element -->
+  <link rel="preload" as="image" href="/images/glow1.webp" type="image/webp" fetchpriority="high" />
 </head>
 
 <body>
