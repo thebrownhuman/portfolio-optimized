@@ -83,7 +83,9 @@
 .what-content-in {
   opacity: 0;
   animation: whatFlicker 0.5s 1 forwards;
-  animation-delay: 1s;
+  /* While the borders draw (whatBorders, 1.2s), not after: with 1s the box
+     showed fully drawn and empty before the text came in, on every entry */
+  animation-delay: 0.2s;
 }
 @keyframes whatFlicker {
   0%,
