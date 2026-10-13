@@ -73,6 +73,52 @@ const WhatIDo = () => {
       keyHandlers.forEach(({ el, handler }) => el.removeEventListener("keydown", handler));
     };
   }, []);
+
+  // The box is a fixed height per breakpoint, and a closed card gets half of it.
+  // When a closed card's title + description need more than that (BACKEND &
+  // AUTOMATION wraps, and narrow phones wrap the text more), raise the box's
+  // min-height so every description shows in full and clears the arrow button
+  useEffect(() => {
+    const boxIn = boxInRef.current;
+    if (!boxIn) return;
+    const fit = () => {
+      const cards = containerRef.current.filter((c): c is HTMLDivElement => !!c);
+      // Only measure the resting state: an open card has different padding
+      const busy = cards.some(
+        (c) =>
+          c.matches(":hover") ||
+          c.classList.contains("what-content-active") ||
+          c.classList.contains("what-sibling")
+      );
+      if (busy || getComputedStyle(boxIn).display === "none") return;
+      let need = 0;
+      cards.forEach((card) => {
+        const text = card.querySelector("p");
+        if (!text) return;
+        const style = getComputedStyle(card);
+        const top = card.getBoundingClientRect().top;
+        // Text end, from the card's top (top padding included)
+        const textEnd = text.getBoundingClientRect().bottom - top;
+        // The arrow sits in the bottom-right corner, inside the bottom padding
+        const arrow = card.querySelector(".what-arrow");
+        const arrowSpace = arrow
+          ? card.getBoundingClientRect().bottom - arrow.getBoundingClientRect().top + 8
+          : 0;
+        const bottom = Math.max(parseFloat(style.paddingBottom) || 0, arrowSpace);
+        need = Math.max(need, textEnd + bottom);
+      });
+      // Closed cards are min-height: 50% of the box
+      boxIn.style.minHeight = need ? `${Math.ceil(need * 2)}px` : "";
+    };
+    // Also runs when the box first shows (desktop reveals it from display: none)
+    // and on width changes; the text end doesn't depend on the box height, so
+    // setting the min-height settles after one extra call
+    const observer = new ResizeObserver(fit);
+    observer.observe(boxIn);
+    document.fonts?.ready.then(fit);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="whatIDO">
       <div className="what-box">

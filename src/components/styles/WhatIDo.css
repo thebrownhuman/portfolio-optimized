@@ -231,6 +231,22 @@
     opacity: 0.2;
   }
 }
+/* Closed cards show title + description only: the box can now be taller than
+   before (WhatIDo.tsx fits it to the longest description), so the tags no longer
+   sit below the clipped edge by themselves. Same as the <=900px layout */
+.what-content h5,
+.what-content-flex {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.what-noTouch:hover h5,
+.what-content-active h5 {
+  opacity: 0.5;
+}
+.what-noTouch:hover .what-content-flex,
+.what-content-active .what-content-flex {
+  opacity: 1;
+}
 .what-content-flex {
   display: flex;
   gap: 5px;
@@ -356,7 +372,8 @@
     justify-content: left;
   }
   .what-box:last-child {
-    height: 500px;
+    /* min: the box inside grows when a description needs it (WhatIDo.tsx) */
+    min-height: 500px;
   }
   .what-box {
     width: 500px;
