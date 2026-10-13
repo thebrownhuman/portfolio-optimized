@@ -22,14 +22,14 @@ const ProjectsIndex = () => (
           <a className="pj-card" href={`/projects/${p.slug}`}>
             <div className="pj-media" data-cursor="disable">
               <img
+                loading={i < 2 ? "eager" : "lazy"}
+                decoding="async"
                 src={`/images/${p.image}-1600.webp`}
                 srcSet={imageSrcSet(p.image)}
                 sizes="(max-width: 900px) 92vw, min(46vw, 660px)"
                 width={1600}
                 height={873}
                 alt={p.title}
-                loading={i < 2 ? "eager" : "lazy"}
-                decoding="async"
               />
             </div>
             <div className="pj-info">

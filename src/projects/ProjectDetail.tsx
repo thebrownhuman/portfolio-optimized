@@ -69,14 +69,14 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
           <span className="pd-more-title">{prev.title}</span>
           <img
             className="pd-more-img"
+            loading="lazy"
+            decoding="async"
             src={`/images/${prev.image}-900.webp`}
             srcSet={imageSrcSet(prev.image)}
             sizes="(max-width: 900px) 100vw, 50vw"
             width={900}
             height={491}
             alt=""
-            loading="lazy"
-            decoding="async"
           />
         </a>
         <a
@@ -90,14 +90,14 @@ const ProjectDetail = ({ project: p, index }: { project: Project; index: number 
           <span className="pd-more-title">{next.title}</span>
           <img
             className="pd-more-img"
+            loading="lazy"
+            decoding="async"
             src={`/images/${next.image}-900.webp`}
             srcSet={imageSrcSet(next.image)}
             sizes="(max-width: 900px) 100vw, 50vw"
             width={900}
             height={491}
             alt=""
-            loading="lazy"
-            decoding="async"
           />
         </a>
       </nav>
