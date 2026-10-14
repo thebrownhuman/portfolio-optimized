@@ -70,8 +70,11 @@ const CursorFollower = () => {
         startLoop();
       };
 
-      element.addEventListener("mouseover", overHandler);
-      element.addEventListener("mouseout", outHandler);
+      // enter/leave, not over/out: those bubble up from the icons inside the
+      // bar, so moving across an icon's children dropped and re-added
+      // cursor-icons and the fill restarted from the bar's top edge
+      element.addEventListener("mouseenter", overHandler);
+      element.addEventListener("mouseleave", outHandler);
       overHandlers.push({ el: element, handler: overHandler });
       outHandlers.push({ el: element, handler: outHandler });
     });
@@ -79,8 +82,8 @@ const CursorFollower = () => {
     return () => {
       if (rafId !== undefined) cancelAnimationFrame(rafId);
       document.removeEventListener("mousemove", onMouseMove);
-      overHandlers.forEach(({ el, handler }) => el.removeEventListener("mouseover", handler));
-      outHandlers.forEach(({ el, handler }) => el.removeEventListener("mouseout", handler));
+      overHandlers.forEach(({ el, handler }) => el.removeEventListener("mouseenter", handler));
+      outHandlers.forEach(({ el, handler }) => el.removeEventListener("mouseleave", handler));
     };
   }, []);
 
