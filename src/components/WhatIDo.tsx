@@ -84,7 +84,11 @@ const WhatIDo = () => {
     if (!boxIn) return;
     let lastHeight = -1;
     let refreshTimer: number | undefined;
-    const observer = new ResizeObserver(() => {
+    // Compare only once the height has settled: a card closing animates
+    // .what-more back to 0fr after :hover is gone, and every intermediate height
+    // used to count as a change. Each refresh re-renders the timeline's
+    // .what-box-in display none -> flex, which replays the entrance animations
+    const settle = () => {
       const busy = containerRef.current.some(
         (c) =>
           !!c &&
@@ -96,9 +100,11 @@ const WhatIDo = () => {
       if (busy || height === lastHeight) return;
       const first = lastHeight < 0;
       lastHeight = height;
-      if (first) return;
+      if (!first) ScrollTrigger.refresh();
+    };
+    const observer = new ResizeObserver(() => {
       clearTimeout(refreshTimer);
-      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 150);
+      refreshTimer = window.setTimeout(settle, lastHeight < 0 ? 0 : 150);
     });
     observer.observe(boxIn);
     return () => {
